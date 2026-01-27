@@ -4,17 +4,26 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// Helper to get auth headers
-function getAuthHeaders(token?: string | null): HeadersInit {
-  const headers: HeadersInit = {
+// Helper to get headers with credentials for SIWE session
+function getHeaders(): HeadersInit {
+  return {
     'Content-Type': 'application/json',
   };
+}
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+// Helper to get fetch options with credentials
+function getFetchOptions(method: string = 'GET', body?: unknown): RequestInit {
+  const options: RequestInit = {
+    method,
+    headers: getHeaders(),
+    credentials: 'include', // Include session cookie
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
   }
 
-  return headers;
+  return options;
 }
 
 export interface Poll {
@@ -98,12 +107,8 @@ export interface CreateGroupResponse {
 /**
  * Create a new poll
  */
-export async function createPoll(data: CreatePollRequest, token?: string | null): Promise<Poll> {
-  const response = await fetch(`${API_BASE_URL}/polls`, {
-    method: 'POST',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(data),
-  });
+export async function createPoll(data: CreatePollRequest, _token?: string | null): Promise<Poll> {
+  const response = await fetch(`${API_BASE_URL}/polls`, getFetchOptions('POST', data));
 
   if (!response.ok) {
     const error = await response.json();
@@ -120,13 +125,9 @@ export async function createPoll(data: CreatePollRequest, token?: string | null)
 export async function updatePoll(
   pollId: string,
   data: UpdatePollRequest,
-  token?: string | null
+  _token?: string | null
 ): Promise<Poll> {
-  const response = await fetch(`${API_BASE_URL}/polls/${pollId}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(`${API_BASE_URL}/polls/${pollId}`, getFetchOptions('PUT', data));
 
   if (!response.ok) {
     const error = await response.json();
@@ -143,13 +144,9 @@ export async function updatePoll(
 export async function createPollGroup(
   pollId: string,
   data: CreateGroupRequest,
-  token?: string | null
+  _token?: string | null
 ): Promise<CreateGroupResponse> {
-  const response = await fetch(`${API_BASE_URL}/polls/${pollId}/create-group`, {
-    method: 'POST',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(data),
-  });
+  const response = await fetch(`${API_BASE_URL}/polls/${pollId}/create-group`, getFetchOptions('POST', data));
 
   if (!response.ok) {
     const error = await response.json();

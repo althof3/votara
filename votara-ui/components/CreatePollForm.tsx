@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePollCreation } from '@/lib/hooks/usePollCreation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import type { CreatePollRequest } from '@/lib/api/polls';
+import styles from './CreatePollForm.module.css';
 
 export function CreatePollForm() {
   const { user } = useAuth();
@@ -76,57 +77,55 @@ export function CreatePollForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Create New Poll</h2>
-
+    <div className={styles.form}>
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div className={styles.error}>
           {error}
         </div>
       )}
 
       {createdPollId && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-          Poll created! ID: {createdPollId}
+        <div className={styles.success}>
+          <p className={styles.successTitle}>Poll created! ID: {createdPollId}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit}>
         {/* Title */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Title *</label>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Title *</label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className={styles.input}
             placeholder="Enter poll title"
             required
           />
         </div>
 
         {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Description</label>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Description</label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className={styles.textarea}
             placeholder="Enter poll description"
             rows={3}
           />
         </div>
 
         {/* Options */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Options *</label>
+        <div className={styles.optionsContainer}>
+          <label className={styles.label}>Options *</label>
           {formData.options.map((option, index) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className={styles.optionItem}>
               <input
                 type="text"
                 value={option.label}
                 onChange={(e) => handleOptionChange(index, e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${styles.input} ${styles.optionInput}`}
                 placeholder={`Option ${index + 1}`}
                 required
               />
@@ -134,7 +133,7 @@ export function CreatePollForm() {
                 <button
                   type="button"
                   onClick={() => handleRemoveOption(index)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  className={styles.removeButton}
                 >
                   Remove
                 </button>
@@ -144,7 +143,7 @@ export function CreatePollForm() {
           <button
             type="button"
             onClick={handleAddOption}
-            className="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            className={styles.addButton}
             disabled={formData.options.length >= 256}
           >
             Add Option
@@ -152,25 +151,25 @@ export function CreatePollForm() {
         </div>
 
         {/* Start Time */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Start Time *</label>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Start Time *</label>
           <input
             type="datetime-local"
             value={formData.startTime.slice(0, 16)}
             onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value).toISOString() })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className={styles.input}
             required
           />
         </div>
 
         {/* End Time */}
-        <div>
-          <label className="block text-sm font-medium mb-2">End Time *</label>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>End Time *</label>
           <input
             type="datetime-local"
             value={formData.endTime.slice(0, 16)}
             onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value).toISOString() })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className={styles.input}
             required
           />
         </div>
@@ -179,13 +178,13 @@ export function CreatePollForm() {
         <button
           type="submit"
           disabled={loading || !user}
-          className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className={styles.submitButton}
         >
           {loading ? `Creating... (${currentStep})` : 'Create Draft Poll'}
         </button>
 
         {!user && (
-          <p className="text-sm text-red-600 text-center">Please login to create a poll</p>
+          <p className={styles.error}>Please login to create a poll</p>
         )}
       </form>
     </div>

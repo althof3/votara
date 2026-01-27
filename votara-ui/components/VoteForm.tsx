@@ -7,6 +7,7 @@ import { generateVoteProof, pollIdToScope, optionToMessage, isUserInGroup } from
 import type { Poll } from '@/lib/api/polls';
 import type { SemaphoreProof } from '@/lib/contracts/votaraABI';
 import type { Address } from 'viem';
+import styles from './VoteForm.module.css';
 
 interface VoteFormProps {
   poll: Poll;
@@ -104,61 +105,63 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
 
   if (poll.status !== 'ACTIVE') {
     return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-yellow-800">This poll is not active yet.</p>
+      <div className={styles.info}>
+        <p>This poll is not active yet.</p>
       </div>
     );
   }
 
+  const getBadgeClass = () => {
+    switch (poll.status) {
+      case 'ACTIVE':
+        return styles.badgeActive;
+      case 'DRAFT':
+        return styles.badgePending;
+      case 'ENDED':
+        return styles.badgeCompleted;
+      default:
+        return styles.badgePending;
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-2">{poll.title}</h2>
-      {poll.description && (
-        <p className="text-gray-600 mb-6">{poll.description}</p>
-      )}
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <span className={`${styles.badge} ${getBadgeClass()}`}>
+          {poll.status}
+        </span>
+        <h2 className={styles.title}>{poll.title}</h2>
+        {poll.description && (
+          <p className={styles.description}>{poll.description}</p>
+        )}
+      </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div className={styles.error}>
           {error}
         </div>
       )}
 
       {txHash && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800 text-sm">
+        <div className={styles.success}>
+          <p className={styles.successTitle}>
             Transaction submitted! Hash: {txHash.slice(0, 10)}...{txHash.slice(-8)}
           </p>
         </div>
       )}
 
       {/* Options */}
-      <div className="space-y-3 mb-6">
-        <label className="block text-sm font-medium mb-2">Select your choice:</label>
+      <div className={styles.options}>
         {poll.options.map((option) => (
-          <div
+          <button
             key={option.id}
             onClick={() => setSelectedOption(option.id)}
-            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-              selectedOption === option.id
-                ? 'border-blue-600 bg-blue-50'
-                : 'border-gray-300 hover:border-blue-400'
+            className={`${styles.optionButton} ${
+              selectedOption === option.id ? styles.optionButtonSelected : ''
             }`}
           >
-            <div className="flex items-center">
-              <div
-                className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                  selectedOption === option.id
-                    ? 'border-blue-600 bg-blue-600'
-                    : 'border-gray-400'
-                }`}
-              >
-                {selectedOption === option.id && (
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                )}
-              </div>
-              <span className="font-medium">{option.label}</span>
-            </div>
-          </div>
+            {option.label}
+          </button>
         ))}
       </div>
 
@@ -166,7 +169,7 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
       <button
         onClick={handleVoteWithProof}
         disabled={loading || isGeneratingProof || !walletAddress || selectedOption === null}
-        className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-all"
+        className={styles.voteButton}
       >
         {isGeneratingProof
           ? '🔐 Generating Proof...'
@@ -176,16 +179,16 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
       </button>
 
       {!walletAddress && (
-        <p className="text-sm text-red-600 text-center mt-4">Please login to vote</p>
+        <p className={styles.error}>Please login to vote</p>
       )}
 
       {selectedOption === null && walletAddress && (
-        <p className="text-sm text-gray-600 text-center mt-4">Please select an option</p>
+        <p className={styles.info}>Please select an option</p>
       )}
 
       {/* Info */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-xs text-blue-800">
+      <div className={styles.info}>
+        <p>
           <strong>How it works:</strong> Your vote is submitted directly to the smart contract
           using a zero-knowledge proof. This ensures your vote is anonymous and cannot be traced
           back to you, while still preventing double voting.

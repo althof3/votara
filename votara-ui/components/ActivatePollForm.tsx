@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePollCreation } from '@/lib/hooks/usePollCreation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import type { Address } from 'viem';
+import styles from './ActivatePollForm.module.css';
 
 interface ActivatePollFormProps {
   pollId: string;
@@ -71,32 +72,34 @@ export function ActivatePollForm({ pollId, onSuccess }: ActivatePollFormProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Activate Poll</h2>
-      <p className="text-sm text-gray-600 mb-4">Poll ID: {pollId}</p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Activate Poll</h2>
+        <p className={styles.description}>Poll ID: {pollId}</p>
+      </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div className={styles.error}>
           {error}
         </div>
       )}
 
       {/* Step 1: Create Semaphore Group */}
       {step === 'group' && (
-        <form onSubmit={handleCreateGroup} className="space-y-4">
+        <form onSubmit={handleCreateGroup} className={styles.formGroup}>
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className={styles.label}>
               Eligible Voter Addresses (one per line) *
             </label>
             <textarea
               value={eligibleAddresses}
               onChange={(e) => setEligibleAddresses(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              className={styles.input}
               placeholder="0x1234...&#10;0x5678...&#10;0xabcd..."
               rows={10}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className={styles.info}>
               Enter Ethereum addresses of eligible voters (one per line)
             </p>
           </div>
@@ -104,34 +107,34 @@ export function ActivatePollForm({ pollId, onSuccess }: ActivatePollFormProps) {
           <button
             type="submit"
             disabled={loading || !walletAddress}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className={styles.activateButton}
           >
             {loading ? `Creating Group... (${currentStep})` : 'Create Semaphore Group'}
           </button>
 
           {!walletAddress && (
-            <p className="text-sm text-red-600 text-center">Please login to create group</p>
+            <p className={styles.error}>Please login to create group</p>
           )}
         </form>
       )}
 
       {/* Step 2: Activate on Smart Contract */}
       {step === 'activate' && groupId && (
-        <div className="space-y-4">
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800">
+        <div className={styles.formGroup}>
+          <div className={styles.success}>
+            <p className={styles.successTitle}>
               ✅ Semaphore group created successfully!
             </p>
-            <p className="text-sm text-green-800 font-mono mt-2">
+            <p className={styles.successMessage}>
               Group ID: {groupId}
             </p>
           </div>
 
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800 mb-2">
+          <div className={styles.info}>
+            <p className={styles.successMessage}>
               Now activate the poll on the smart contract:
             </p>
-            <ul className="text-xs text-blue-700 list-disc list-inside space-y-1">
+            <ul>
               <li>This will call the smart contract&apos;s activatePoll function</li>
               <li>You&apos;ll need to confirm the transaction in your wallet</li>
               <li>The poll will become ACTIVE after confirmation</li>
@@ -141,37 +144,16 @@ export function ActivatePollForm({ pollId, onSuccess }: ActivatePollFormProps) {
           <button
             onClick={handleActivate}
             disabled={loading || !walletAddress}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className={styles.activateButton}
           >
             {loading ? `Activating... (${currentStep})` : 'Activate Poll on Smart Contract'}
           </button>
 
           {!walletAddress && (
-            <p className="text-sm text-red-600 text-center">Please login to activate poll</p>
+            <p className={styles.error}>Please login to activate poll</p>
           )}
         </div>
       )}
-
-      {/* Progress Indicator */}
-      <div className="mt-6 flex items-center justify-center space-x-4">
-        <div className={`flex items-center ${step === 'group' ? 'text-blue-600' : 'text-green-600'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            step === 'group' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
-          }`}>
-            {step === 'activate' ? '✓' : '1'}
-          </div>
-          <span className="ml-2 text-sm font-medium">Create Group</span>
-        </div>
-        <div className="w-12 h-0.5 bg-gray-300"></div>
-        <div className={`flex items-center ${step === 'activate' ? 'text-blue-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            step === 'activate' ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
-          }`}>
-            2
-          </div>
-          <span className="ml-2 text-sm font-medium">Activate</span>
-        </div>
-      </div>
     </div>
   );
 }

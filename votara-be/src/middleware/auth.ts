@@ -1,84 +1,39 @@
 import { Request, Response, NextFunction } from 'express';
-import axios from 'axios';
+import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';
-import prisma from '../db';
 
-// Extend Express Request to include user info
+const JWT_SECRET = process.env.JWT_SECRET || 'votara-jwt-secret-change-in-production';
+
+// JWT payload interface
+interface JWTPayload {
+  address: string;
+  chainId: number;
+  iat?: number;
+  exp?: number;
+}
+
+// Extend Express Request to include user info and session
 declare global {
   namespace Express {
     interface Request {
       user?: {
         address: string;
-        privyUserId: string;
-        farcasterFid?: string;
-        email?: string;
+        chainId?: number;
+      };
+      session: {
+        nonce?: string;
+        save: (callback: (err: any) => void) => void;
+        destroy: (callback: (err: any) => void) => void;
       };
     }
   }
 }
 
 /**
- * Verify Privy JWT token
+ * Auth middleware - verifies JWT token and attaches user to request
+ * No database hit - just verifies JWT signature
  */
-async function verifyPrivyToken(token: string): Promise<any> {
-  try {
-    const response = await axios.get('https://auth.privy.io/api/v1/users/me', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'privy-app-id': process.env.PRIVY_APP_ID || '',
-      },
-    });
-
-    return response.data;
-  } catch (error) {
-    logger.error('Error verifying Privy token:', error);
-    return null;
-  }
-}
-
-/**
- * Get or create user from Privy data
- */
-async function getOrCreateUser(privyUser: any) {
-  // Extract wallet address
-  const wallet = privyUser.linked_accounts?.find(
-    (account: any) => account.type === 'wallet'
-  );
-
-  if (!wallet) {
-    throw new Error('No wallet linked to Privy account');
-  }
-
-  const address = wallet.address.toLowerCase();
-
-  // Extract Farcaster info
-  const farcaster = privyUser.linked_accounts?.find(
-    (account: any) => account.type === 'farcaster'
-  );
-
-  // Upsert user (create or update)
-  const user = await prisma.user.upsert({
-    where: { address },
-    update: {
-      farcasterFid: farcaster?.fid?.toString(),
-      email: privyUser.email?.address,
-      updatedAt: new Date(),
-    },
-    create: {
-      address,
-      privyUserId: privyUser.id,
-      farcasterFid: farcaster?.fid?.toString(),
-      email: privyUser.email?.address,
-    },
-  });
-
-  return user;
-}
-
-/**
- * Auth middleware - verifies JWT and attaches user to request
- */
-export const authMiddleware = async (
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -95,29 +50,29 @@ export const authMiddleware = async (
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    // Verify token with Privy
-    const privyUser = await verifyPrivyToken(token);
+    // Verify JWT token
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
-    if (!privyUser) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid or expired token',
-      });
-    }
-
-    // Get or create user in database
-    const user = await getOrCreateUser(privyUser);
-
-    // Attach user to request
+    // Attach user to request (from JWT payload, no DB hit)
     req.user = {
-      address: user.address,
-      privyUserId: user.privyUserId!,
-      farcasterFid: user.farcasterFid || undefined,
-      email: user.email || undefined,
+      address: decoded.address.toLowerCase(),
+      chainId: decoded.chainId,
     };
 
     next();
   } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid token',
+      });
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        success: false,
+        error: 'Token expired',
+      });
+    }
     logger.error('Auth middleware error:', error);
     res.status(401).json({
       success: false,
@@ -128,8 +83,9 @@ export const authMiddleware = async (
 
 /**
  * Optional auth middleware - doesn't fail if no token
+ * No database hit - just verifies JWT if present
  */
-export const optionalAuthMiddleware = async (
+export const optionalAuthMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -139,17 +95,11 @@ export const optionalAuthMiddleware = async (
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
-      const privyUser = await verifyPrivyToken(token);
-
-      if (privyUser) {
-        const user = await getOrCreateUser(privyUser);
-        req.user = {
-          address: user.address,
-          privyUserId: user.privyUserId!,
-          farcasterFid: user.farcasterFid || undefined,
-          email: user.email || undefined,
-        };
-      }
+      const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+      req.user = {
+        address: decoded.address.toLowerCase(),
+        chainId: decoded.chainId,
+      };
     }
 
     next();

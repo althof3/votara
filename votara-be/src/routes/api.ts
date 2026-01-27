@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import pollsRouter from './polls';
+import authRouter from './auth';
 
 const router = Router();
 
 // API routes
+router.use('/auth', authRouter);
 router.use('/polls', pollsRouter);
 
 // API info endpoint
@@ -14,6 +16,7 @@ router.get('/', (_req, res) => {
     description: 'Backend API for Votara - Farcaster voting application',
     endpoints: {
       health: '/health',
+      auth: '/api/auth',
       polls: '/api/polls'
     }
   });

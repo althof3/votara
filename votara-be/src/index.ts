@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import session from 'express-session';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler.js';
 import { logger } from './utils/logger.js';
@@ -23,6 +24,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
+
+// Session middleware for SIWE authentication
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'votara-session-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
+  },
+}));
 
 // Routes
 app.use('/health', healthRouter);

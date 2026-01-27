@@ -1,0 +1,243 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #111827, #000000);
+  padding: 1rem;
+}
+
+.content {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffd377;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: white;
+}
+
+.spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid rgba(255, 211, 119, 0.3);
+  border-top-color: #ffd377;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.errorTitle {
+  font-weight: 600;
+  color: #f87171;
+  margin-bottom: 0.5rem;
+}
+
+.errorMessage {
+  color: #fca5a5;
+  font-size: 0.875rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.75rem;
+}
+
+.emptyText {
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.createButton {
+  display: inline-block;
+  background-color: #ffd377;
+  color: #1a1a1a;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.createButton:hover {
+  opacity: 0.9;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 211, 119, 0.3);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.badgeActive {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.badgePending {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.badgeCompleted {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+.cardDescription {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 2rem;
+  }
+  
+  .content {
+    max-width: 80rem;
+  }
+  
+  .header {
+    margin-bottom: 3rem;
+  }
+  
+  .title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .loading {
+    padding: 3rem;
+  }
+  
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border-width: 4px;
+  }
+  
+  .cardTitle {
+    font-size: 1.25rem;
+  }
+  
+  .cardDescription {
+    font-size: 1rem;
+  }
+}
+

@@ -1,0 +1,166 @@
+.container {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.description {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 2rem;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.badgeActive {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.badgePending {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.badgeCompleted {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+.options {
+  margin-bottom: 1.5rem;
+}
+
+.optionButton {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: white;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0.75rem;
+}
+
+.optionButton:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 211, 119, 0.5);
+}
+
+.optionButtonSelected {
+  background-color: rgba(255, 211, 119, 0.2);
+  border-color: #ffd377;
+}
+
+.voteButton {
+  width: 100%;
+  background-color: #ffd377;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.voteButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.voteButton:disabled {
+  background-color: #374151;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #fca5a5;
+}
+
+.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.successTitle {
+  font-weight: 600;
+  color: #4ade80;
+  margin-bottom: 0.5rem;
+}
+
+.successMessage {
+  color: #86efac;
+  font-size: 0.875rem;
+}
+
+.successLink {
+  color: #60a5fa;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.successLink:hover {
+  color: #93c5fd;
+}
+
+.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #93c5fd;
+  font-size: 0.875rem;
+}
+
