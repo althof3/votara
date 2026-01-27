@@ -12,27 +12,32 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract VotaraVoting is Ownable {
     ISemaphore public semaphore;
 
-    struct Vote {
-        bytes32 voteId;
-        uint256 groupId; // Semaphore group ID for this vote
-        mapping(uint256 => uint256) optionVotes; // optionIndex => vote count
+    struct Poll {
+        bytes32 pollId;
+        uint256 groupId; // Semaphore group ID for this poll (0 if not activated)
+        bool isActive; // Whether poll is activated
+        mapping(uint8 => uint256) optionVotes; // optionIndex => vote count
     }
 
-    // voteId => Vote
-    mapping(bytes32 => Vote) public votes;
+    // pollId => Poll
+    mapping(bytes32 => Poll) public polls;
 
-    // Track all vote IDs
-    bytes32[] public voteIds;
+    // Track all poll IDs
+    bytes32[] public pollIds;
 
     // Events
-    event VoteCreated(
-        bytes32 indexed voteId,
+    event PollCreated(
+        bytes32 indexed pollId
+    );
+
+    event PollActivated(
+        bytes32 indexed pollId,
         uint256 groupId
     );
 
     event VoteCast(
-        bytes32 indexed voteId,
-        uint256 optionIndex,
+        bytes32 indexed pollId,
+        uint8 optionIndex,
         uint256 nullifierHash
     );
     
@@ -44,124 +49,101 @@ contract VotaraVoting is Ownable {
         require(_semaphore != address(0), "Invalid Semaphore address");
         semaphore = ISemaphore(_semaphore);
     }
-    
+
     /**
-     * @notice Create a new vote
-     * @param _voteId Unique identifier for the vote (hash)
+     * @notice Activate a poll on-chain
+     * @param _pollId Unique identifier for the poll (hash)
      * @param _groupId Semaphore group ID for eligible voters
      */
-    function createVote(
-        bytes32 _voteId,
+    function activatePoll(
+        bytes32 _pollId,
         uint256 _groupId
     ) external onlyOwner {
-        require(_voteId != bytes32(0), "Vote ID cannot be empty");
-        require(votes[_voteId].voteId == bytes32(0), "Vote already exists");
+        require(_pollId != bytes32(0), "Poll ID cannot be empty");
+        require(polls[_pollId].pollId == bytes32(0), "Poll already exists");
 
-        Vote storage newVote = votes[_voteId];
-        newVote.voteId = _voteId;
-        newVote.groupId = _groupId;
+        Poll storage newPoll = polls[_pollId];
+        newPoll.pollId = _pollId;
+        newPoll.groupId = _groupId;
 
-        voteIds.push(_voteId);
+        pollIds.push(_pollId);
 
-        emit VoteCreated(_voteId, _groupId);
+        emit PollActivated(_pollId, _groupId);
     }
     
     /**
-     * @notice Cast a vote using Semaphore proof
-     * @param _voteId ID of the vote
-     * @param _optionIndex Index of the chosen option (used as message)
+     * @notice Cast a vote on a poll using Semaphore proof
+     * @param _pollId ID of the poll
+     * @param _optionIndex Index of the chosen option (0-255)
      * @param _proof Semaphore proof struct
      */
     function castVote(
-        bytes32 _voteId,
-        uint256 _optionIndex,
+        bytes32 _pollId,
+        uint8 _optionIndex,
         ISemaphore.SemaphoreProof calldata _proof
     ) external {
-        Vote storage vote = votes[_voteId];
+        Poll storage poll = polls[_pollId];
 
-        require(vote.voteId != bytes32(0), "Vote does not exist");
-        require(vote.active, "Vote is not active");
-        require(_proof.message == _optionIndex, "Message must match option index");
+        require(poll.pollId != bytes32(0), "Poll does not exist");
+        require(_proof.message == uint256(_optionIndex), "Message must match option index");
 
         // Verify the Semaphore proof
-        semaphore.validateProof(vote.groupId, _proof);
+        semaphore.validateProof(poll.groupId, _proof);
 
         // Increment vote count for the chosen option
-        vote.optionVotes[_optionIndex]++;
+        poll.optionVotes[_optionIndex]++;
 
-        emit VoteCast(_voteId, _optionIndex, _proof.nullifier);
-    }
-    
-    /**
-     * @notice End a vote manually
-     * @param _voteId ID of the vote to end
-     */
-    function endVote(bytes32 _voteId) external onlyOwner {
-        Vote storage vote = votes[_voteId];
-        require(vote.voteId != bytes32(0), "Vote does not exist");
-        require(vote.active, "Vote already ended");
-
-        vote.active = false;
-        emit VoteEnded(_voteId);
+        emit VoteCast(_pollId, _optionIndex, _proof.nullifier);
     }
 
     /**
-     * @notice Get vote results for a specific option
-     * @param _voteId ID of the vote
-     * @param _optionIndex Index of the option
+     * @notice Get vote count for a specific option in a poll
+     * @param _pollId ID of the poll
+     * @param _optionIndex Index of the option (0-255)
      * @return Number of votes for the option
      */
-    function getVoteCount(bytes32 _voteId, uint256 _optionIndex)
+    function getVoteCount(bytes32 _pollId, uint8 _optionIndex)
         external
         view
         returns (uint256)
     {
-        return votes[_voteId].optionVotes[_optionIndex];
+        return polls[_pollId].optionVotes[_optionIndex];
     }
 
     /**
-     * @notice Check if vote exists
-     * @param _voteId ID of the vote
-     * @return Whether the vote exists
+     * @notice Check if poll exists
+     * @param _pollId ID of the poll
+     * @return Whether the poll exists
      */
-    function voteExists(bytes32 _voteId) external view returns (bool) {
-        return votes[_voteId].voteId != bytes32(0);
+    function pollExists(bytes32 _pollId) external view returns (bool) {
+        return polls[_pollId].pollId != bytes32(0);
     }
 
     /**
-     * @notice Check if vote is active
-     * @param _voteId ID of the vote
-     * @return Whether the vote is active
-     */
-    function isVoteActive(bytes32 _voteId) external view returns (bool) {
-        return votes[_voteId].active;
-    }
-
-    /**
-     * @notice Get vote group ID
-     * @param _voteId ID of the vote
+     * @notice Get poll group ID
+     * @param _pollId ID of the poll
      * @return Semaphore group ID
      */
-    function getVoteGroupId(bytes32 _voteId) external view returns (uint256) {
-        return votes[_voteId].groupId;
+    function getPollGroupId(bytes32 _pollId) external view returns (uint256) {
+        return polls[_pollId].groupId;
     }
 
     /**
-     * @notice Get total number of votes
-     * @return Total number of votes created
+     * @notice Get total number of polls
+     * @return Total number of polls created
      */
-    function getTotalVotes() external view returns (uint256) {
-        return voteIds.length;
+    function getTotalPolls() external view returns (uint256) {
+        return pollIds.length;
     }
 
     /**
-     * @notice Get vote ID by index
-     * @param _index Index in the voteIds array
-     * @return Vote ID at the given index
+     * @notice Get poll ID by index
+     * @param _index Index in the pollIds array
+     * @return Poll ID at the given index
      */
-    function getVoteIdByIndex(uint256 _index) external view returns (bytes32) {
-        require(_index < voteIds.length, "Index out of bounds");
-        return voteIds[_index];
+    function getPollIdByIndex(uint256 _index) external view returns (bytes32) {
+        require(_index < pollIds.length, "Index out of bounds");
+        return pollIds[_index];
     }
 }
 

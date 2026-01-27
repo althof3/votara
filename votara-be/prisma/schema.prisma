@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  address      String   @id // Wallet address (lowercase)
+  farcasterFid String?  @map("farcaster_fid")
+  email        String?
+  privyUserId  String?  @unique @map("privy_user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  polls Poll[]
+
+  @@map("users")
+}
+
+enum PollStatus {
+  DRAFT
+  ACTIVE
+  ENDED
+}
+
+model Poll {
+  id             String     @id // bytes32 hash from contract
+  groupId        String     @map("group_id")
+  title          String
+  description    String?
+  options        Json       // Array of strings
+  groupMembers   Json?      @map("group_members") // Array of identity commitments (eligible voters)
+  startTime      DateTime   @map("start_time")
+  endTime        DateTime   @map("end_time")
+  status         PollStatus @default(DRAFT)
+  contractTxHash String?    @map("contract_tx_hash") // Transaction hash when activated on-chain
+  createdBy      String     @map("created_by")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  creator User       @relation(fields: [createdBy], references: [address])
+  votes   PollVote[]
+
+  @@map("polls")
+}
+
+model PollVote {
+  id             String   @id @default(uuid())
+  pollId         String   @map("poll_id")
+  optionIndex    Int      @map("option_index")
+  nullifierHash  String   @unique @map("nullifier_hash")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@map("poll_votes")
+}
+

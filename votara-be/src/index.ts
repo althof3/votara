@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { logger } from './utils/logger.js';
 import healthRouter from './routes/health.js';
 import apiRouter from './routes/api.js';
+import { startAllEventListeners } from './services/eventListener.js';
 
 dotenv.config();
 
@@ -31,9 +32,21 @@ app.use('/api', apiRouter);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`🚀 Votara Backend running on port ${PORT}`);
   logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Start blockchain event listeners
+  if (process.env.CONTRACT_ADDRESS) {
+    try {
+      await startAllEventListeners();
+      logger.info('✅ Blockchain event listeners started');
+    } catch (error) {
+      logger.error('❌ Failed to start event listeners:', error);
+    }
+  } else {
+    logger.warn('⚠️  CONTRACT_ADDRESS not set. Event listeners disabled.');
+  }
 });
 
 export default app;

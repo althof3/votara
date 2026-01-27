@@ -1,20 +1,20 @@
 import { Router } from 'express';
-import votesRouter from './votes.js';
+import pollsRouter from './polls';
 
 const router = Router();
 
 // API routes
-router.use('/votes', votesRouter);
+router.use('/polls', pollsRouter);
 
 // API info endpoint
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
   res.json({
     name: 'Votara API',
     version: '1.0.0',
     description: 'Backend API for Votara - Farcaster voting application',
     endpoints: {
       health: '/health',
-      votes: '/api/votes'
+      polls: '/api/polls'
     }
   });
 });

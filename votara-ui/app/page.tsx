@@ -1,21 +1,11 @@
 "use client";
 import { useEffect } from "react";
-import Image from "next/image";
+import Link from "next/link";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-// import { useQuickAuth } from "@coinbase/onchainkit/minikit";
-import styles from "./page.module.css";
+import { PollsList } from "@/components/PollsList";
 
 export default function Home() {
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `useMiniKit().context?.user`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
-
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
 
   useEffect(() => {
@@ -25,57 +15,36 @@ export default function Home() {
   }, [setMiniAppReady, isMiniAppReady]);
 
   return (
-    <div className={styles.container}>
-      <header className={styles.headerWrapper}>
+    <div className="min-h-screen p-4 bg-gradient-to-b from-black to-gray-900">
+      <header className="flex justify-between items-center py-4 mb-8 max-w-7xl mx-auto">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent">
+            Votara
+          </h1>
+          <p className="text-white/60">Decentralized Voting Platform</p>
+        </div>
         <Wallet />
       </header>
 
-      <div className={styles.content}>
-        <Image
-          priority
-          src="/sphere.svg"
-          alt="Sphere"
-          width={200}
-          height={200}
-        />
-        <h1 className={styles.title}>MiniKit</h1>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-end mb-8">
+          <Link
+            href="/create"
+            className="inline-block px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/40"
+          >
+            Create New Poll
+          </Link>
+        </div>
 
-        <p>
-          Get started by editing <code>app/page.tsx</code>
-        </p>
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold text-white mb-6">Active Polls</h2>
+          <PollsList status="ACTIVE" limit={10} />
+        </div>
 
-        <h2 className={styles.componentsTitle}>Explore Components</h2>
-
-        <ul className={styles.components}>
-          {[
-            {
-              name: "Transaction",
-              url: "https://docs.base.org/onchainkit/transaction/transaction",
-            },
-            {
-              name: "Swap",
-              url: "https://docs.base.org/onchainkit/swap/swap",
-            },
-            {
-              name: "Checkout",
-              url: "https://docs.base.org/onchainkit/checkout/checkout",
-            },
-            {
-              name: "Wallet",
-              url: "https://docs.base.org/onchainkit/wallet/wallet",
-            },
-            {
-              name: "Identity",
-              url: "https://docs.base.org/onchainkit/identity/identity",
-            },
-          ].map((component) => (
-            <li key={component.name}>
-              <a target="_blank" rel="noreferrer" href={component.url}>
-                {component.name}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold text-white mb-6">All Polls</h2>
+          <PollsList limit={20} />
+        </div>
       </div>
     </div>
   );
