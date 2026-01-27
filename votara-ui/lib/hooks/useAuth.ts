@@ -2,7 +2,6 @@
 
 import { useAccount, useSignMessage, useDisconnect, useConnect } from 'wagmi';
 import { useCallback, useEffect, useState } from 'react';
-import { SiweMessage } from 'siwe';
 import { injected } from 'wagmi/connectors';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -111,7 +110,7 @@ export function useAuth() {
       // Store JWT token in localStorage
       // localStorage.setItem(TOKEN_STORAGE_KEY, token);
       // setAccessToken(token);
-      // setAuthenticated(true);
+      setAuthenticated(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setError(errorMessage);
@@ -131,7 +130,7 @@ export function useAuth() {
       // localStorage.removeItem(TOKEN_STORAGE_KEY);
       // setAccessToken(null);
       disconnect();
-      // setAuthenticated(false);
+      setAuthenticated(false);
     } catch (err) {
       console.error('Logout error:', err);
     }
@@ -141,14 +140,20 @@ export function useAuth() {
   useEffect(() => {
     console.log([isConnected, address, authenticated, loading, login]);
     
-    if (isConnected && address && !loading) {
+    if (isConnected && address && !authenticated && !loading) {
       login();
     }
-  }, [isConnected, address, loading, login]);
+  }, [isConnected, address, authenticated, loading, login]);
+
+  useEffect(() => {
+    if (!isConnected) {
+      setAuthenticated(false);
+    }
+  }, [isConnected]);
 
   return {
     ready: true,
-    authenticated: isConnected,
+    authenticated,
     loading,
     error,
     walletAddress: address || null,
