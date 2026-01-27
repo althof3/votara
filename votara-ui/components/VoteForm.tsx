@@ -52,12 +52,10 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
     }
 
     // Generate the proof
-    const groupId = BigInt(poll.groupId);
     const message = optionToMessage(selectedOption);
     const scope = pollIdToScope(poll.id);
 
     const proof = await generateVoteProof(
-      groupId,
       members,
       message,
       scope
