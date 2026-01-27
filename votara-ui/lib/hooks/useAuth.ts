@@ -63,55 +63,55 @@ export function useAuth() {
       }
 
       // 1. Get nonce from backend
-      const nonceRes = await fetch(`${API_BASE_URL}/auth/nonce`, {
-        credentials: 'include',
-      });
+      // const nonceRes = await fetch(`${API_BASE_URL}/auth/nonce`, {
+      //   credentials: 'include',
+      // });
 
-      if (!nonceRes.ok) {
-        throw new Error('Failed to get nonce');
-      }
+      // if (!nonceRes.ok) {
+      //   throw new Error('Failed to get nonce');
+      // }
 
-      const { nonce } = await nonceRes.json();
+      // const { nonce } = await nonceRes.json();
 
-      // 2. Create SIWE message
-      const message = new SiweMessage({
-        domain: window.location.host,
-        address,
-        statement: 'Sign in with Ethereum to Votara',
-        uri: window.location.origin,
-        version: '1',
-        chainId: 8453, // Base mainnet
-        nonce,
-      });
+      // // 2. Create SIWE message
+      // const message = new SiweMessage({
+      //   domain: window.location.host,
+      //   address,
+      //   statement: 'Sign in with Ethereum to Votara',
+      //   uri: window.location.origin,
+      //   version: '1',
+      //   chainId: 8453, // Base mainnet
+      //   nonce,
+      // });
 
-      const preparedMessage = message.prepareMessage();
+      // const preparedMessage = message.prepareMessage();
 
-      // 3. Sign message
-      const signature = await signMessageAsync({
-        message: preparedMessage,
-      });
+      // // 3. Sign message
+      // const signature = await signMessageAsync({
+      //   message: preparedMessage,
+      // });
 
-      // 4. Verify with backend and get JWT token
-      const verifyRes = await fetch(`${API_BASE_URL}/auth/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: message.toMessage(),
-          signature
-        }),
-        credentials: 'include',
-      });
+      // // 4. Verify with backend and get JWT token
+      // const verifyRes = await fetch(`${API_BASE_URL}/auth/verify`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     message: message.toMessage(),
+      //     signature
+      //   }),
+      //   credentials: 'include',
+      // });
 
-      if (!verifyRes.ok) {
-        throw new Error('Failed to verify signature');
-      }
+      // if (!verifyRes.ok) {
+      //   throw new Error('Failed to verify signature');
+      // }
 
-      const { token } = await verifyRes.json();
+      // const { token } = await verifyRes.json();
 
       // Store JWT token in localStorage
-      localStorage.setItem(TOKEN_STORAGE_KEY, token);
-      setAccessToken(token);
-      setAuthenticated(true);
+      // localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      // setAccessToken(token);
+      // setAuthenticated(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setError(errorMessage);
@@ -123,15 +123,15 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-      });
+      // await fetch(`${API_BASE_URL}/auth/logout`, {
+      //   method: 'POST',
+      // });
 
       // Clear token from localStorage
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      setAccessToken(null);
+      // localStorage.removeItem(TOKEN_STORAGE_KEY);
+      // setAccessToken(null);
       disconnect();
-      setAuthenticated(false);
+      // setAuthenticated(false);
     } catch (err) {
       console.error('Logout error:', err);
     }
@@ -139,14 +139,16 @@ export function useAuth() {
 
   // Auto-login when wallet connects
   useEffect(() => {
-    if (isConnected && address && !authenticated && !loading) {
+    console.log([isConnected, address, authenticated, loading, login]);
+    
+    if (isConnected && address && !loading) {
       login();
     }
-  }, [isConnected, address, authenticated, loading, login]);
+  }, [isConnected, address, loading, login]);
 
   return {
     ready: true,
-    authenticated,
+    authenticated: isConnected,
     loading,
     error,
     walletAddress: address || null,
