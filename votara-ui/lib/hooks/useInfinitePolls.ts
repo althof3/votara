@@ -64,7 +64,7 @@ export function useInfinitePolls(options: UseInfinitePollsOptions = {}) {
     if (enabled) {
       fetchPolls(1, false);
     }
-  }, [enabled, limit, status]); // Re-fetch when filters change
+  }, [enabled, fetchPolls, limit, status]); // Re-fetch when filters change
 
   /**
    * Load more polls (for infinite scrolling)

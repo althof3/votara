@@ -4,13 +4,9 @@ import {
   getPollResults as apiGetPollResults,
   getAllPolls as apiGetAllPolls,
   getPollById as apiGetPollById,
-  updatePoll as apiUpdatePoll,
-  createPollGroup as apiCreatePollGroup,
   type Poll,
   type PollResultsResponse,
   type CreatePollRequest,
-  type UpdatePollRequest,
-  type CreateGroupRequest,
 } from '../api/polls';
 import { useAuth } from './useAuth';
 

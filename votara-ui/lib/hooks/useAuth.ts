@@ -1,6 +1,6 @@
 'use client';
 
-import { useAccount, useSignMessage, useDisconnect, useConnect } from 'wagmi';
+import { useAccount, useDisconnect, useConnect } from 'wagmi';
 import { useCallback, useEffect, useState } from 'react';
 import { injected } from 'wagmi/connectors';
 
@@ -9,7 +9,6 @@ const TOKEN_STORAGE_KEY = 'votara_auth_token';
 
 export function useAuth() {
   const { address, isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
   const { connect } = useConnect();
   const [authenticated, setAuthenticated] = useState(false);
@@ -118,7 +117,7 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, [address, isConnected, signMessageAsync, connect]);
+  }, [address, isConnected, connect]);
 
   const logout = useCallback(async () => {
     try {

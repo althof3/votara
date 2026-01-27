@@ -7,7 +7,7 @@ import type { CreatePollRequest } from '@/lib/api/polls';
 import styles from './CreatePollForm.module.css';
 
 export function CreatePollForm() {
-  const { user } = useAuth();
+  const { accessToken } = useAuth();
   const { createDraftPoll, loading, error, currentStep } = usePollCreation();
 
   const [formData, setFormData] = useState<CreatePollRequest>({
@@ -47,7 +47,7 @@ export function CreatePollForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
+    if (!accessToken) {
       alert('Please login first');
       return;
     }
@@ -177,13 +177,13 @@ export function CreatePollForm() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading || !user}
+          disabled={loading || !accessToken}
           className={styles.submitButton}
         >
           {loading ? `Creating... (${currentStep})` : 'Create Draft Poll'}
         </button>
 
-        {!user && (
+        {!accessToken && (
           <p className={styles.error}>Please login to create a poll</p>
         )}
       </form>

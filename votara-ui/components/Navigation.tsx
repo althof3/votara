@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import styles from './Navigation.module.css';
-import { useWalletContext, Wallet } from '@coinbase/onchainkit/wallet';
 
 export function Navigation() {
   const pathname = usePathname();

@@ -106,7 +106,7 @@ export default function MyPollsPage() {
           <div className={styles.emptyState}>
             <h2 className={styles.emptyTitle}>No Polls Yet</h2>
             <p className={styles.emptyText}>
-              You haven't created any polls yet. Create your first poll to get started!
+              You haven&apos;t created any polls yet. Create your first poll to get started!
             </p>
             <Link href="/create" className={styles.createButton}>
               Create Poll
