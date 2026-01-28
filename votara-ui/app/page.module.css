@@ -1,8 +1,7 @@
 .container {
   min-height: 100vh;
-  background-color: #f5ede0;
+  background: linear-gradient(to bottom right, #111827, #000000);
   padding: 1rem;
-  padding-top: 5rem;
 }
 
 .content {
@@ -12,28 +11,27 @@
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding: 0 0.5rem;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #ffd377;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fbbf24;
   margin-bottom: 0.5rem;
   line-height: 1.2;
 }
 
 .subtitle {
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.875rem;
-  color: #8b7355;
-  line-height: 1.4;
 }
 
 /* Tablet and up */
 @media (min-width: 768px) {
   .container {
-    padding: 2rem;
+    padding: 2rem 1rem;
   }
 
   .content {
@@ -41,16 +39,15 @@
   }
 
   .header {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
   }
 
   .title {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
   }
 
   .subtitle {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 }
 

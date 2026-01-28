@@ -44,6 +44,30 @@ export function getWalletClient() {
 }
 
 /**
+ * Create a poll on-chain (registers creator)
+ * This should be called BEFORE saving metadata to backend
+ * @param pollId - Poll ID (bytes32)
+ * @param account - User's wallet address
+ * @returns Transaction hash
+ */
+export async function createPoll(
+  pollId: `0x${string}`,
+  account: Address
+): Promise<Hash> {
+  const walletClient = getWalletClient();
+
+  const hash = await walletClient.writeContract({
+    address: VOTARA_CONTRACT_ADDRESS,
+    abi: VOTARA_ABI,
+    functionName: 'createPoll',
+    args: [pollId],
+    account,
+  });
+
+  return hash;
+}
+
+/**
  * Activate a poll on-chain
  * @param pollId - Poll ID (bytes32)
  * @param groupId - Semaphore group ID

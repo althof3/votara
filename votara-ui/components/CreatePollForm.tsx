@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { usePollCreation } from '@/lib/hooks/usePollCreation';
 import { useAuth } from '@/lib/hooks/useAuth';
-import type { CreatePollRequest } from '@/lib/api/client';
+import type { Address } from 'viem';
 import styles from './CreatePollForm.module.css';
 
 export function CreatePollForm() {
-  const { authenticated } = useAuth();
+  const { authenticated, walletAddress } = useAuth();
   const { createDraftPoll, loading, error, currentStep } = usePollCreation();
 
-  const [formData, setFormData] = useState<CreatePollRequest>({
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     options: [
@@ -47,8 +47,8 @@ export function CreatePollForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!authenticated) {
-      alert('Please login first');
+    if (!authenticated || !walletAddress) {
+      alert('Please login and connect wallet first');
       return;
     }
 
@@ -58,7 +58,7 @@ export function CreatePollForm() {
       return;
     }
 
-    const poll = await createDraftPoll(formData);
+    const poll = await createDraftPoll(formData, walletAddress as Address);
     if (poll) {
       setCreatedPollId(poll.id);
       alert(`Poll created successfully! ID: ${poll.id}`);
@@ -177,14 +177,14 @@ export function CreatePollForm() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading || !authenticated}
+          disabled={loading || !authenticated || !walletAddress}
           className={styles.submitButton}
         >
           {loading ? `Creating... (${currentStep})` : 'Create Draft Poll'}
         </button>
 
-        {!authenticated && (
-          <p className={styles.error}>Please login to create a poll</p>
+        {(!authenticated || !walletAddress) && (
+          <p className={styles.warning}>Please login and connect wallet to create a poll</p>
         )}
       </form>
     </div>

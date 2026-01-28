@@ -10,7 +10,6 @@ export function Navigation() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { ready, authenticated, login, logout, walletAddress } = useAuth();
-  // const { address, isConnected, openWalletModal } = useWalletContext()
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -76,7 +75,7 @@ export function Navigation() {
             ) : (
               <div className={styles.walletInfo}>
                 <span className={styles.walletAddress}>
-                  {walletAddress?.slice(0, 6)}...
+                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                 </span>
                 <button onClick={logout} className={styles.logoutButton}>
                   Disconnect

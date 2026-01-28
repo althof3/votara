@@ -115,13 +115,12 @@ export function useAuth() {
 
   // Auto-login when wallet connects
   useEffect(() => {
-    console.log([isConnected, address, authenticated, loading, login]);
-    
     if (isConnected && address && !authenticated && !loading) {
       login();
     }
   }, [isConnected, address, authenticated, loading, login]);
 
+  // Reset state when wallet disconnects
   useEffect(() => {
     if (!isConnected) {
       setAuthenticated(false);

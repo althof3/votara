@@ -120,6 +120,7 @@ export interface PollResultsResponse {
 }
 
 export interface CreatePollRequest {
+  pollId: string; // bytes32 hex string (generated on frontend)
   title: string;
   description?: string;
   options: Array<{ id: number; label: string }>;

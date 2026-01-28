@@ -2,10 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: rgba(245, 237, 224, 0.95);
+  background-color: rgba(17, 24, 39, 0.95);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 211, 119, 0.2);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 2px solid #fbbf24;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .container {
@@ -25,7 +25,7 @@
 .menuButton {
   background: none;
   border: none;
-  color: #574115;
+  color: #fbbf24;
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -36,7 +36,7 @@
 }
 
 .menuButton:hover {
-  background-color: rgba(255, 211, 119, 0.2);
+  background-color: rgba(251, 191, 36, 0.2);
 }
 
 .logo {
@@ -59,7 +59,7 @@
 .logoText {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ffd377;
+  color: #fbbf24;
 }
 
 .walletWrapper {
@@ -68,20 +68,21 @@
 }
 
 .authButton {
-  background-color: #ffd377;
-  color: #1a1a1a;
-  border: none;
+  background-color: #fbbf24;
+  color: #000000;
+  border: 2px solid #fbbf24;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 
 .authButton:hover {
-  opacity: 0.9;
+  background-color: transparent;
+  color: #fbbf24;
 }
 
 .authButton:disabled {
@@ -96,15 +97,15 @@
 }
 
 .walletAddress {
-  color: #574115;
+  color: #fbbf24;
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .logoutButton {
-  background-color: rgba(255, 211, 119, 0.2);
-  color: #574115;
-  border: 1px solid rgba(255, 211, 119, 0.3);
+  background-color: transparent;
+  color: #fbbf24;
+  border: 2px solid #fbbf24;
   padding: 0.375rem 0.75rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -115,7 +116,8 @@
 }
 
 .logoutButton:hover {
-  background-color: rgba(255, 211, 119, 0.3);
+  background-color: #fbbf24;
+  color: #000000;
 }
 
 /* Sidebar */
@@ -125,10 +127,10 @@
   left: -280px;
   width: 280px;
   height: 100vh;
-  background-color: rgba(245, 237, 224, 0.98);
+  background-color: rgba(17, 24, 39, 0.98);
   backdrop-filter: blur(16px);
-  border-right: 1px solid rgba(255, 211, 119, 0.2);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  border-right: 2px solid #fbbf24;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
   transition: left 0.3s ease;
   z-index: 60;
   overflow-y: auto;
@@ -143,20 +145,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 211, 119, 0.2);
+  border-bottom: 2px solid #fbbf24;
 }
 
 .sidebarTitle {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #574115;
+  color: #fbbf24;
   margin: 0;
 }
 
 .closeButton {
   background: none;
   border: none;
-  color: #574115;
+  color: #fbbf24;
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -167,7 +169,7 @@
 }
 
 .closeButton:hover {
-  background-color: rgba(255, 211, 119, 0.2);
+  background-color: rgba(251, 191, 36, 0.2);
 }
 
 .sidebarContent {
@@ -179,7 +181,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.5rem;
-  color: #8b7355;
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9375rem;
@@ -188,8 +190,8 @@
 }
 
 .sidebarLink:hover {
-  color: #574115;
-  background-color: rgba(255, 211, 119, 0.15);
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.15);
 }
 
 .sidebarLink svg {
@@ -197,9 +199,9 @@
 }
 
 .sidebarLinkActive {
-  color: #c49a3a;
-  background-color: rgba(255, 211, 119, 0.25);
-  border-left-color: #ffd377;
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.25);
+  border-left-color: #fbbf24;
 }
 
 /* Overlay */

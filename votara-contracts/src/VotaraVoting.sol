@@ -14,6 +14,7 @@ contract VotaraVoting is Ownable {
 
     struct Poll {
         bytes32 pollId;
+        address creator; // Address of poll creator
         uint256 groupId; // Semaphore group ID for this poll (0 if not activated)
         bool isActive; // Whether poll is activated
         mapping(uint8 => uint256) optionVotes; // optionIndex => vote count
@@ -27,7 +28,8 @@ contract VotaraVoting is Ownable {
 
     // Events
     event PollCreated(
-        bytes32 indexed pollId
+        bytes32 indexed pollId,
+        address indexed creator
     );
 
     event PollActivated(
@@ -51,20 +53,46 @@ contract VotaraVoting is Ownable {
     }
 
     /**
-     * @notice Activate a poll on-chain
+     * @notice Create a poll (registers creator on-chain)
+     * @dev This should be called when user creates a DRAFT poll
+     * @dev Metadata (title, description, options) stored off-chain in backend
+     * @param _pollId Unique identifier for the poll (hash from backend)
+     */
+    function createPoll(bytes32 _pollId) external {
+        require(_pollId != bytes32(0), "Poll ID cannot be empty");
+        require(polls[_pollId].creator == address(0), "Poll already created");
+
+        // Register poll creator in struct
+        polls[_pollId].creator = msg.sender;
+
+        emit PollCreated(_pollId, msg.sender);
+    }
+
+    /**
+     * @notice Activate a poll on-chain with Semaphore group
+     * @dev Can only be called by poll creator or contract owner
+     * @dev This transitions poll from DRAFT to ACTIVE status
      * @param _pollId Unique identifier for the poll (hash)
      * @param _groupId Semaphore group ID for eligible voters
      */
     function activatePoll(
         bytes32 _pollId,
         uint256 _groupId
-    ) external onlyOwner {
+    ) external {
         require(_pollId != bytes32(0), "Poll ID cannot be empty");
-        require(polls[_pollId].pollId == bytes32(0), "Poll already exists");
+        require(polls[_pollId].pollId == bytes32(0), "Poll already activated");
+        require(polls[_pollId].creator != address(0), "Poll not created yet");
 
-        Poll storage newPoll = polls[_pollId];
-        newPoll.pollId = _pollId;
-        newPoll.groupId = _groupId;
+        // Only poll creator or contract owner can activate
+        require(
+            polls[_pollId].creator == msg.sender || msg.sender == owner(),
+            "Only poll creator or owner can activate"
+        );
+
+        Poll storage poll = polls[_pollId];
+        poll.pollId = _pollId;
+        poll.groupId = _groupId;
+        poll.isActive = true;
 
         pollIds.push(_pollId);
 
@@ -144,6 +172,15 @@ contract VotaraVoting is Ownable {
     function getPollIdByIndex(uint256 _index) external view returns (bytes32) {
         require(_index < pollIds.length, "Index out of bounds");
         return pollIds[_index];
+    }
+
+    /**
+     * @notice Get poll creator address
+     * @param _pollId ID of the poll
+     * @return Address of the poll creator
+     */
+    function getPollCreator(bytes32 _pollId) external view returns (address) {
+        return polls[_pollId].creator;
     }
 }
 

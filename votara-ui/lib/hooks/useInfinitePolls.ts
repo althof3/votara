@@ -64,7 +64,8 @@ export function useInfinitePolls(options: UseInfinitePollsOptions = {}) {
     if (enabled) {
       fetchPolls(1, false);
     }
-  }, [enabled, fetchPolls, limit, status]); // Re-fetch when filters change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, limit, status]); // Re-fetch when filters change (fetchPolls excluded to prevent loop)
 
   /**
    * Load more polls (for infinite scrolling)

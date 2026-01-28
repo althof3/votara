@@ -28,6 +28,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@semaphore-protocol/core": "^4.14.2",
+    "@semaphore-protocol/group": "^4.14.2",
+    "@semaphore-protocol/identity": "^4.14.2",
     "axios": "^1.6.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -35,6 +38,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.0",
+    "poseidon-lite": "^0.3.0",
     "siwe": "^3.0.0",
     "uuid": "^13.0.0",
     "viem": "^2.21.54",

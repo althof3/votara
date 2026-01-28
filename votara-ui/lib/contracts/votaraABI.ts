@@ -22,6 +22,15 @@ export const VOTARA_ABI = [
   },
   {
     type: 'function',
+    name: 'createPoll',
+    inputs: [
+      { name: '_pollId', type: 'bytes32', internalType: 'bytes32' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'castVote',
     inputs: [
       { name: '_pollId', type: 'bytes32', internalType: 'bytes32' },

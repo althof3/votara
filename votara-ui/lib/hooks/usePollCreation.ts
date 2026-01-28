@@ -11,8 +11,9 @@ import {
   type Poll,
   type CreateGroupResponse,
 } from '../api/client';
-import { activatePoll, waitForTransaction } from '../contracts/votaraContract';
+import { createPoll as createPollOnChain, activatePoll, waitForTransaction } from '../contracts/votaraContract';
 import type { Address } from 'viem';
+import { keccak256, toBytes } from 'viem';
 
 export function usePollCreation() {
   const [loading, setLoading] = useState(false);
@@ -20,28 +21,60 @@ export function usePollCreation() {
   const [currentStep, setCurrentStep] = useState<'idle' | 'creating' | 'group' | 'activating' | 'done'>('idle');
 
   /**
+   * Generate a unique poll ID
+   * Uses keccak256(uuid) to create a bytes32 hash
+   */
+  const generatePollId = useCallback((): `0x${string}` => {
+    const uuid = crypto.randomUUID();
+    return keccak256(toBytes(uuid));
+  }, []);
+
+  /**
    * Step 1: Create draft poll
+   * NEW FLOW:
+   * 1. Generate pollId on frontend
+   * 2. Call smart contract createPoll(pollId) to register creator
+   * 3. Wait for transaction confirmation
+   * 4. Call backend API to save metadata
    */
   const createDraftPoll = useCallback(
-    async (data: CreatePollRequest): Promise<Poll | null> => {
+    async (data: Omit<CreatePollRequest, 'pollId'>, account: Address): Promise<Poll | null> => {
       setLoading(true);
       setError(null);
       setCurrentStep('creating');
 
       try {
-        const poll = await pollsApi.create(data);
+        // Step 1: Generate poll ID
+        const pollId = generatePollId();
+        console.log('📝 Generated poll ID:', pollId);
+
+        // Step 2: Call smart contract to register creator
+        console.log('🔗 Calling smart contract createPoll()...');
+        const hash = await createPollOnChain(pollId, account);
+
+        // Step 3: Wait for transaction confirmation
+        console.log('⏳ Waiting for transaction confirmation...', hash);
+        await waitForTransaction(hash);
+        console.log('✅ Transaction confirmed!');
+
+        // Step 4: Save metadata to backend
+        console.log('💾 Saving metadata to backend...');
+        const poll = await pollsApi.create({ ...data, pollId });
+
         setCurrentStep('idle');
+        console.log('✅ Poll created successfully:', poll.id);
         return poll;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to create poll';
         setError(errorMessage);
         setCurrentStep('idle');
+        console.error('❌ Error creating poll:', err);
         return null;
       } finally {
         setLoading(false);
       }
     },
-    []
+    [generatePollId]
   );
 
   /**
@@ -127,13 +160,13 @@ export function usePollCreation() {
    */
   const createAndActivatePoll = useCallback(
     async (
-      pollData: CreatePollRequest,
+      pollData: Omit<CreatePollRequest, 'pollId'>,
       eligibleAddresses: string[],
       account: Address
     ): Promise<{ success: boolean; pollId?: string; error?: string }> => {
       try {
-        // Step 1: Create draft poll
-        const poll = await createDraftPoll(pollData);
+        // Step 1: Create draft poll (calls SC createPoll + saves metadata)
+        const poll = await createDraftPoll(pollData, account);
         if (!poll) {
           return { success: false, error: error || 'Failed to create poll' };
         }
@@ -165,6 +198,7 @@ export function usePollCreation() {
   );
 
   return {
+    generatePollId,
     createDraftPoll,
     createGroup,
     activatePollOnChain,

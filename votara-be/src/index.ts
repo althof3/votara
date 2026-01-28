@@ -37,15 +37,29 @@ app.listen(PORT, async () => {
   logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
 
   // Start blockchain event listeners
-  if (process.env.CONTRACT_ADDRESS) {
-    try {
-      await startAllEventListeners();
-      logger.info('✅ Blockchain event listeners started');
-    } catch (error) {
-      logger.error('❌ Failed to start event listeners:', error);
+  const contractAddress = process.env.CONTRACT_ADDRESS;
+  const rpcUrl = process.env.RPC_URL;
+
+  if (contractAddress && contractAddress !== '' && contractAddress !== '0x') {
+    if (!rpcUrl) {
+      logger.warn('⚠️  RPC_URL not set. Event listeners disabled.');
+      logger.warn('⚠️  Set RPC_URL in .env to enable blockchain event listeners');
+    } else {
+      try {
+        logger.info(`🔗 Connecting to blockchain at ${rpcUrl}`);
+        logger.info(`📝 Contract address: ${contractAddress}`);
+        await startAllEventListeners();
+        logger.info('✅ Blockchain event listeners started');
+      } catch (error) {
+        logger.error('❌ Failed to start event listeners:', error);
+        logger.error('💡 This is normal if you are running in development without blockchain connection');
+        logger.error('💡 The API will still work for non-blockchain features');
+      }
     }
   } else {
     logger.warn('⚠️  CONTRACT_ADDRESS not set. Event listeners disabled.');
+    logger.warn('💡 Set CONTRACT_ADDRESS in .env to enable blockchain event listeners');
+    logger.warn('💡 The API will still work for non-blockchain features');
   }
 });
 

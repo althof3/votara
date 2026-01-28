@@ -4,11 +4,10 @@ import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { createGroupWithMembers } from '../services/semaphore';
 import type { Address } from 'viem';
-import { v4 as uuidv4 } from 'uuid';
-import { keccak256, toBytes } from 'viem';
 
 // Validation schemas
 const createPollSchema = z.object({
+  pollId: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid pollId format (must be bytes32 hex string)'),
   title: z.string().min(1).max(200),
   description: z.string().optional(),
   options: z.array(z.object({
@@ -32,6 +31,13 @@ const updatePollSchema = z.object({
 /**
  * Create a new poll (as DRAFT)
  * Requires authentication
+ *
+ * NEW FLOW:
+ * 1. Frontend calls smart contract createPoll(pollId) first
+ * 2. Smart contract emits PollCreated(pollId, creator) event
+ * 3. Frontend calls this endpoint with pollId + metadata
+ * 4. Backend saves metadata to database
+ *
  * Poll will be activated later via activatePoll endpoint
  */
 export const createPoll = async (req: Request, res: Response) => {
@@ -46,30 +52,68 @@ export const createPoll = async (req: Request, res: Response) => {
 
     const validatedData = createPollSchema.parse(req.body);
 
-    // Generate poll ID using UUID v4 + keccak256 (cryptographically secure)
-    const pollId = keccak256(toBytes(uuidv4()));
-
-    // Create poll as DRAFT (groupId will be set when activated)
-    const createdPoll = await prisma.poll.create({
-      data: {
-        id: pollId,
-        groupId: '0', // Placeholder, will be set when activated
-        title: validatedData.title,
-        description: validatedData.description,
-        options: validatedData.options,
-        startTime: new Date(validatedData.startTime),
-        endTime: new Date(validatedData.endTime),
-        status: 'DRAFT', // Start as draft
-        createdBy: req.user.address,
-      },
+    // Check if poll already exists
+    const existingPoll = await prisma.poll.findUnique({
+      where: { id: validatedData.pollId },
     });
 
-    logger.info(`Poll created as DRAFT by ${req.user.address}: ${createdPoll.id}`);
+    let poll;
+
+    if (existingPoll) {
+      // Poll already exists (race condition: event listener or previous call)
+
+      // Only allow metadata update if poll is still DRAFT
+      if (existingPoll.status !== 'DRAFT') {
+        return res.status(400).json({
+          success: false,
+          error: 'Poll already exists and is not in DRAFT status. Cannot update metadata.',
+        });
+      }
+
+      // Verify user is the creator
+      if (existingPoll.createdBy !== req.user.address) {
+        return res.status(403).json({
+          success: false,
+          error: 'Only poll creator can update metadata',
+        });
+      }
+
+      // Update metadata (upsert behavior)
+      poll = await prisma.poll.update({
+        where: { id: validatedData.pollId },
+        data: {
+          title: validatedData.title,
+          description: validatedData.description,
+          options: validatedData.options,
+          startTime: new Date(validatedData.startTime),
+          endTime: new Date(validatedData.endTime),
+        },
+      });
+
+      logger.info(`Poll metadata updated by ${req.user.address}: ${poll.id}`);
+    } else {
+      // Create new poll
+      poll = await prisma.poll.create({
+        data: {
+          id: validatedData.pollId,
+          groupId: '0', // Placeholder, will be set when activated
+          title: validatedData.title,
+          description: validatedData.description,
+          options: validatedData.options,
+          startTime: new Date(validatedData.startTime),
+          endTime: new Date(validatedData.endTime),
+          status: 'DRAFT', // Start as draft
+          createdBy: req.user.address,
+        },
+      });
+
+      logger.info(`Poll created as DRAFT by ${req.user.address}: ${poll.id}`);
+    }
 
     res.status(201).json({
       success: true,
-      data: createdPoll,
-      message: 'Poll created as draft. Call /activate to make it live on the blockchain.',
+      data: poll,
+      message: 'Poll metadata saved. Poll is in DRAFT status. Call /create-group and activate on smart contract to make it live.',
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -396,6 +440,7 @@ export const createPollGroup = async (req: Request, res: Response) => {
       where: { id: pollId },
       data: {
         groupMembers: groupMembersArray,
+        groupId: groupId.toString(),
       },
     });
 

@@ -9,6 +9,228 @@
   margin: 0 auto;
 }
 
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.headerInfo {
+  flex: 1;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.badgeDRAFT {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.badgeACTIVE {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.badgeENDED {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.voteCount {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.editButton,
+.activateButton,
+.resultsButton,
+.button,
+.buttonPrimary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+.editButton {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.editButton:hover {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.activateButton {
+  background: linear-gradient(to right, #10b981, #059669);
+  color: white;
+  border: none;
+}
+
+.activateButton:hover {
+  background: linear-gradient(to right, #059669, #047857);
+}
+
+.resultsButton {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.resultsButton:hover {
+  background-color: rgba(168, 85, 247, 0.3);
+}
+
+.description {
+  background-color: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.draftMessage,
+.endedMessage {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #93c5fd;
+}
+
+.draftMessage h3,
+.endedMessage h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #60a5fa;
+}
+
+.draftMessage p,
+.endedMessage p {
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.draftActions {
+  margin-top: 1rem;
+}
+
+.draftActions ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.draftButtons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.button {
+  background-color: rgba(75, 85, 99, 0.3);
+  color: #d1d5db;
+  border: 1px solid rgba(75, 85, 99, 0.5);
+}
+
+.button:hover {
+  background-color: rgba(75, 85, 99, 0.4);
+}
+
+.buttonPrimary {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.buttonPrimary:hover {
+  background-color: #2563eb;
+}
+
+.details {
+  background-color: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.details h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: rgba(17, 24, 39, 0.5);
+  border-radius: 0.5rem;
+}
+
+.detailLabel {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.detailValue {
+  font-size: 0.875rem;
+  color: #e5e7eb;
+  font-family: monospace;
+}
+
 .loading {
   text-align: center;
   padding: 2rem 1rem;
@@ -31,7 +253,26 @@
   }
 
   .content {
-    max-width: 42rem;
+    max-width: 48rem;
+  }
+
+  .header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .description {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .loading {
