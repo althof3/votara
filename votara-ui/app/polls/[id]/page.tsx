@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { VoteForm } from "@/components/VoteForm";
 import { usePolls } from "@/lib/hooks/usePolls";
-import type { Poll } from "@/lib/api/polls";
+import type { Poll } from "@/lib/api/client";
 import styles from "./poll.module.css";
 
 export default function PollPage() {

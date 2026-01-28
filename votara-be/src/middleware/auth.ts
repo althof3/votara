@@ -12,18 +12,13 @@ interface JWTPayload {
   exp?: number;
 }
 
-// Extend Express Request to include user info and session
+// Extend Express Request to include user info
 declare global {
   namespace Express {
     interface Request {
       user?: {
         address: string;
         chainId?: number;
-      };
-      session: {
-        nonce?: string;
-        save: (callback: (err: any) => void) => void;
-        destroy: (callback: (err: any) => void) => void;
       };
     }
   }

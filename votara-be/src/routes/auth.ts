@@ -48,25 +48,24 @@ function generateToken(address: string, chainId: number): string {
 /**
  * GET /api/auth/nonce
  * Generate a nonce for SIWE authentication
+ * Returns a JWT-signed nonce (stateless, no session needed)
  */
 router.get('/nonce', (req: Request, res: Response) => {
   try {
     const nonce = generateNonce();
-    req.session.nonce = nonce;
-    
-    req.session.save((err) => {
-      if (err) {
-        logger.error('Error saving session:', err);
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to generate nonce',
-        });
-      }
-      
-      res.json({
-        success: true,
-        nonce,
-      });
+
+    // Sign nonce as JWT with short expiry (5 minutes)
+    // This makes it stateless - no need to store in session
+    const signedNonce = jwt.sign(
+      { nonce },
+      JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    res.json({
+      success: true,
+      nonce,
+      signedNonce, // Frontend must send this back for verification
     });
   } catch (error) {
     logger.error('Error generating nonce:', error);
@@ -79,25 +78,38 @@ router.get('/nonce', (req: Request, res: Response) => {
 
 /**
  * POST /api/auth/verify
- * Verify SIWE message and create session
+ * Verify SIWE message and return JWT token
+ * Stateless - uses signed nonce instead of session
  */
 router.post('/verify', async (req: Request, res: Response) => {
   try {
-    const { message, signature } = req.body;
+    const { message, signature, signedNonce } = req.body;
 
-    if (!message || !signature) {
+    if (!message || !signature || !signedNonce) {
       return res.status(400).json({
         success: false,
-        error: 'Message and signature are required',
+        error: 'Message, signature, and signedNonce are required',
+      });
+    }
+
+    // Verify and decode the signed nonce
+    let nonce: string;
+    try {
+      const decoded = jwt.verify(signedNonce, JWT_SECRET) as { nonce: string };
+      nonce = decoded.nonce;
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or expired nonce',
       });
     }
 
     const siweMessage = new SiweMessage(message);
-    
-    // Verify the message
+
+    // Verify the SIWE message with the nonce
     const fields = await siweMessage.verify({
       signature,
-      nonce: req.session.nonce,
+      nonce,
     });
 
     if (!fields.success) {
@@ -110,26 +122,13 @@ router.post('/verify', async (req: Request, res: Response) => {
     // Create or update user in database (only on login)
     await getOrCreateUser(siweMessage.address);
 
-    // Generate JWT token
+    // Generate JWT token for authentication
     const token = generateToken(siweMessage.address, siweMessage.chainId);
 
-    // Clear nonce from session
-    req.session.nonce = undefined;
-
-    req.session.save((err) => {
-      if (err) {
-        logger.error('Error saving session:', err);
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to create session',
-        });
-      }
-
-      res.json({
-        success: true,
-        address: siweMessage.address,
-        token, // Return JWT token to frontend
-      });
+    res.json({
+      success: true,
+      address: siweMessage.address,
+      token, // Return JWT token to frontend
     });
   } catch (error) {
     logger.error('Error verifying SIWE message:', error);

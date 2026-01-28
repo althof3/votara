@@ -1,19 +1,14 @@
 import { useState, useCallback } from 'react';
 import {
-  createPoll as apiCreatePoll,
-  getPollResults as apiGetPollResults,
-  getAllPolls as apiGetAllPolls,
-  getPollById as apiGetPollById,
+  pollsApi,
   type Poll,
   type PollResultsResponse,
   type CreatePollRequest,
-} from '../api/polls';
-import { useAuth } from './useAuth';
+} from '../api/client';
 
 export function usePolls() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { accessToken } = useAuth();
 
   /**
    * Create a new poll
@@ -22,7 +17,7 @@ export function usePolls() {
     setLoading(true);
     setError(null);
     try {
-      const poll = await apiCreatePoll(data, accessToken);
+      const poll = await pollsApi.create(data);
       return poll;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create poll';
@@ -31,7 +26,7 @@ export function usePolls() {
     } finally {
       setLoading(false);
     }
-  }, [accessToken]);
+  }, []);
 
 
 
@@ -42,7 +37,7 @@ export function usePolls() {
     setLoading(true);
     setError(null);
     try {
-      const results = await apiGetPollResults(pollId);
+      const results = await pollsApi.getResults(pollId);
       return results;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get poll results';
@@ -64,7 +59,7 @@ export function usePolls() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiGetAllPolls(params);
+      const response = await pollsApi.getAll(params);
       return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get polls';
@@ -82,7 +77,7 @@ export function usePolls() {
     setLoading(true);
     setError(null);
     try {
-      const poll = await apiGetPollById(pollId);
+      const poll = await pollsApi.getById(pollId);
       return poll;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get poll';

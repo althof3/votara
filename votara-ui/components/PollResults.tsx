@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePolls } from '@/lib/hooks/usePolls';
-import type { PollResultsResponse } from '@/lib/api/polls';
+import type { PollResultsResponse } from '@/lib/api/client';
 import styles from './PollResults.module.css';
 
 interface PollResultsProps {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useVoting } from '@/lib/hooks/useVoting';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { generateVoteProof, pollIdToScope, optionToMessage, isUserInGroup } from '@/lib/utils/semaphore';
-import type { Poll } from '@/lib/api/polls';
+import type { Poll } from '@/lib/api/client';
 import type { SemaphoreProof } from '@/lib/contracts/votaraABI';
 import type { Address } from 'viem';
 import styles from './VoteForm.module.css';

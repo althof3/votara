@@ -1,5 +1,5 @@
 import { createWalletClient, http, type Address, type Hash, keccak256, toBytes } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { Account, privateKeyToAccount } from 'viem/accounts';
 import { base, baseSepolia } from 'viem/chains';
 import { logger } from '../utils/logger';
 import { publicClient } from './blockchain';
@@ -103,6 +103,8 @@ export async function createSemaphoreGroup(): Promise<bigint> {
       abi: SEMAPHORE_ABI,
       functionName: 'createGroup',
       args: [],
+      chain: CHAIN,
+      account: client.account as Account,
     });
 
     logger.info(`📝 Group creation tx: ${hash}`);
@@ -153,6 +155,8 @@ export async function addMembersToGroup(
       abi: SEMAPHORE_ABI,
       functionName: 'addMembers',
       args: [groupId, identityCommitments],
+      chain: CHAIN,
+      account: client.account as Account,
     });
 
     logger.info(`📝 Add members tx: ${hash}`);

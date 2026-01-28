@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfinitePolls } from '@/lib/hooks/useInfinitePolls';
-import type { Poll } from '@/lib/api/polls';
+import type { Poll } from '@/lib/api/client';
 import styles from './PollsList.module.css';
 
 interface PollsListProps {

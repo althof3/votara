@@ -2,16 +2,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { pollsApi, type Poll } from "@/lib/api/client";
+import axios from "axios";
 import styles from "./my-polls.module.css";
-
-interface Poll {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  createdAt: string;
-  options: { id: string; text: string; votes: number }[];
-}
 
 export default function MyPollsPage() {
   const { walletAddress, authenticated } = useAuth();
@@ -28,23 +21,15 @@ export default function MyPollsPage() {
     const fetchMyPolls = async () => {
       try {
         setLoading(true);
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-        const response = await fetch(`${API_BASE_URL}/polls?creator=${walletAddress}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // Include session cookie
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch polls");
-        }
-
-        const data = await response.json();
-        setPolls(data.polls || []);
+        const response = await pollsApi.getAll({ creator: walletAddress });
+        setPolls(response.polls || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        if (axios.isAxiosError(err)) {
+          setError(err.response?.data?.error || err.message || "Failed to fetch polls");
+        } else {
+          setError(err instanceof Error ? err.message : "An error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -126,7 +111,7 @@ export default function MyPollsPage() {
                     className={`${styles.badge} ${
                       poll.status === "ACTIVE"
                         ? styles.badgeActive
-                        : poll.status === "PENDING"
+                        : poll.status === "DRAFT"
                         ? styles.badgePending
                         : styles.badgeCompleted
                     }`}

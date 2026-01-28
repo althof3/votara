@@ -4,24 +4,20 @@
 
 import { useState, useCallback } from 'react';
 import {
-  createPoll as apiCreatePoll,
-  createPollGroup as apiCreatePollGroup,
-  updatePoll as apiUpdatePoll,
+  pollsApi,
   type CreatePollRequest,
   type CreateGroupRequest,
   type UpdatePollRequest,
   type Poll,
   type CreateGroupResponse,
-} from '../api/polls';
+} from '../api/client';
 import { activatePoll, waitForTransaction } from '../contracts/votaraContract';
 import type { Address } from 'viem';
-import { useAuth } from './useAuth';
 
 export function usePollCreation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<'idle' | 'creating' | 'group' | 'activating' | 'done'>('idle');
-  const { accessToken } = useAuth();
 
   /**
    * Step 1: Create draft poll
@@ -33,7 +29,7 @@ export function usePollCreation() {
       setCurrentStep('creating');
 
       try {
-        const poll = await apiCreatePoll(data, accessToken);
+        const poll = await pollsApi.create(data);
         setCurrentStep('idle');
         return poll;
       } catch (err) {
@@ -45,7 +41,7 @@ export function usePollCreation() {
         setLoading(false);
       }
     },
-    [accessToken]
+    []
   );
 
   /**
@@ -59,7 +55,7 @@ export function usePollCreation() {
 
       try {
         const groupData: CreateGroupRequest = { eligibleAddresses };
-        const response = await apiCreatePollGroup(pollId, groupData, accessToken);
+        const response = await pollsApi.createGroup(pollId, groupData);
         setCurrentStep('idle');
         return response;
       } catch (err) {
@@ -71,7 +67,7 @@ export function usePollCreation() {
         setLoading(false);
       }
     },
-    [accessToken]
+    []
   );
 
   /**
@@ -113,7 +109,7 @@ export function usePollCreation() {
       setError(null);
 
       try {
-        const poll = await apiUpdatePoll(pollId, data, accessToken);
+        const poll = await pollsApi.update(pollId, data);
         return poll;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to update poll';
@@ -123,7 +119,7 @@ export function usePollCreation() {
         setLoading(false);
       }
     },
-    [accessToken]
+    []
   );
 
   /**

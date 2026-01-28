@@ -1,45 +1,35 @@
 'use client';
 
-import { useAccount, useDisconnect, useConnect } from 'wagmi';
+import { SiweMessage } from 'siwe';
+import { useAccount, useDisconnect, useConnect, useSignMessage } from 'wagmi';
 import { useCallback, useEffect, useState } from 'react';
 import { injected } from 'wagmi/connectors';
+import axios from 'axios';
+import { authApi } from '@/lib/api/client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const TOKEN_STORAGE_KEY = 'votara_auth_token';
 
 export function useAuth() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const { connect } = useConnect();
+  const { signMessageAsync } = useSignMessage();
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // Load token from localStorage on mount
+  // Check if token exists and verify on mount
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (token) {
-      setAccessToken(token);
       // Verify token is still valid
-      fetch(`${API_BASE_URL}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-        .then((res) => {
-          if (res.ok) {
-            setAuthenticated(true);
-          } else {
-            // Token invalid, clear it
-            localStorage.removeItem(TOKEN_STORAGE_KEY);
-            setAccessToken(null);
-            setAuthenticated(false);
-          }
+      authApi.me()
+        .then(() => {
+          setAuthenticated(true);
         })
         .catch(() => {
+          // Token invalid, clear it
           localStorage.removeItem(TOKEN_STORAGE_KEY);
-          setAccessToken(null);
           setAuthenticated(false);
         });
     }
@@ -60,76 +50,64 @@ export function useAuth() {
         throw new Error('No wallet address');
       }
 
-      // 1. Get nonce from backend
-      // const nonceRes = await fetch(`${API_BASE_URL}/auth/nonce`, {
-      //   credentials: 'include',
-      // });
+      // 1. Get nonce from backend (with signed nonce for stateless auth)
+      const nonceRes = await authApi.getNonce();
+      const { nonce, signedNonce } = nonceRes.data;
 
-      // if (!nonceRes.ok) {
-      //   throw new Error('Failed to get nonce');
-      // }
+      // 2. Create SIWE message
+      const message = new SiweMessage({
+        domain: window.location.host,
+        address,
+        statement: 'Sign in with Ethereum to Votara',
+        uri: window.location.origin,
+        version: '1',
+        chainId: chainId || 8453, // Use wallet's chainId or default to Base mainnet
+        nonce,
+      });
 
-      // const { nonce } = await nonceRes.json();
+      const preparedMessage = message.prepareMessage();
 
-      // // 2. Create SIWE message
-      // const message = new SiweMessage({
-      //   domain: window.location.host,
-      //   address,
-      //   statement: 'Sign in with Ethereum to Votara',
-      //   uri: window.location.origin,
-      //   version: '1',
-      //   chainId: 8453, // Base mainnet
-      //   nonce,
-      // });
+      // 3. Sign message with wallet
+      const signature = await signMessageAsync({
+        message: preparedMessage,
+      });
 
-      // const preparedMessage = message.prepareMessage();
+      // 4. Verify with backend and get JWT token (send signedNonce for stateless verification)
+      const verifyRes = await authApi.verify({
+        message: message.toMessage(),
+        signature,
+        signedNonce, // Required for stateless nonce verification
+      });
 
-      // // 3. Sign message
-      // const signature = await signMessageAsync({
-      //   message: preparedMessage,
-      // });
+      const { token } = verifyRes.data;
 
-      // // 4. Verify with backend and get JWT token
-      // const verifyRes = await fetch(`${API_BASE_URL}/auth/verify`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     message: message.toMessage(),
-      //     signature
-      //   }),
-      //   credentials: 'include',
-      // });
-
-      // if (!verifyRes.ok) {
-      //   throw new Error('Failed to verify signature');
-      // }
-
-      // const { token } = await verifyRes.json();
-
-      // Store JWT token in localStorage
-      // localStorage.setItem(TOKEN_STORAGE_KEY, token);
-      // setAccessToken(token);
+      // Store JWT token in localStorage (axios interceptor will auto-attach it)
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
       setAuthenticated(true);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
-      setError(errorMessage);
-      console.error('SIWE login error:', err);
+      // Handle axios errors
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.error || err.message || 'Authentication failed';
+        setError(errorMessage);
+        console.error('SIWE login error:', err.response?.data || err.message);
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+        setError(errorMessage);
+        console.error('SIWE login error:', err);
+      }
     } finally {
       setLoading(false);
     }
-  }, [address, isConnected, connect]);
+  }, [address, isConnected, chainId, connect, signMessageAsync]);
 
   const logout = useCallback(async () => {
     try {
-      // await fetch(`${API_BASE_URL}/auth/logout`, {
-      //   method: 'POST',
-      // });
-
       // Clear token from localStorage
-      // localStorage.removeItem(TOKEN_STORAGE_KEY);
-      // setAccessToken(null);
-      disconnect();
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
       setAuthenticated(false);
+
+      // Disconnect wallet
+      disconnect();
     } catch (err) {
       console.error('Logout error:', err);
     }
@@ -156,7 +134,6 @@ export function useAuth() {
     loading,
     error,
     walletAddress: address || null,
-    accessToken, // Return JWT token
     login,
     logout,
   };

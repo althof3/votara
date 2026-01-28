@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getAllPolls, type Poll, type PaginationMeta } from '../api/polls';
+import { pollsApi, type Poll, type PaginationMeta } from '../api/client';
 
 interface UseInfinitePollsOptions {
   limit?: number;
@@ -31,7 +31,7 @@ export function useInfinitePolls(options: UseInfinitePollsOptions = {}) {
     setError(null);
 
     try {
-      const response = await getAllPolls({
+      const response = await pollsApi.getAll({
         page,
         limit,
         status,
