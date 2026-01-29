@@ -1,15 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAccount } from 'wagmi';
+import { Wallet } from '@coinbase/onchainkit/wallet';
 import { useAuth } from '@/lib/hooks/useAuth';
 import styles from './Navigation.module.css';
 
 export function Navigation() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { ready, authenticated, login, logout, walletAddress } = useAuth();
+  const { address, isConnected } = useAccount();
+  const { authenticated, login, loading, logout } = useAuth();
+
+  // Auto-login when wallet connects
+  useEffect(() => {
+    console.log(isConnected, address, authenticated, loading);
+    if (isConnected && address && !authenticated && !loading) {
+      login();
+    }
+  }, [isConnected, address, authenticated, loading, login]);
+
+  // Reset auth state when wallet disconnects
+  useEffect(() => {
+    if (!isConnected) {
+      logout();
+    }
+  }, [isConnected, logout]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -64,34 +82,8 @@ export function Navigation() {
           </div>
 
           <div className={styles.walletWrapper}>
-            {!ready ? (
-              <button disabled className={styles.authButton}>
-                Loading...
-              </button>
-            ) : !authenticated ? (
-              <button onClick={login} className={styles.authButton}>
-                Connect Wallet
-              </button>
-            ) : (
-              <div className={styles.walletInfo}>
-                <span className={styles.walletAddress}>
-                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
-                </span>
-                <button onClick={logout} className={styles.logoutButton}>
-                  Disconnect
-                </button>
-              </div>
-            )}
+            <Wallet />
           </div>
-          {/* <button
-            onClick={isConnected ? disconnect : openWalletModal}
-            className="flex items-center gap-2 rounded-xl px-3 py-2 bg-white shadow"
-          >
-            {/* <Wallet /> */}
-            {/* {isConnected
-              ? `${address?.slice(0, 4)}…${address?.slice(-4)}`
-              : 'Connect'}
-          </button>  */}
         </div>
       </nav>
 

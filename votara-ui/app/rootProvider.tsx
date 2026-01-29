@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, createConfig } from "wagmi";
 import { base, baseSepolia } from "viem/chains";
 import { injected } from "wagmi/connectors";
-// import "@coinbase/onchainkit/styles.css";
+import "@coinbase/onchainkit/styles.css";
 
 const queryClient = new QueryClient();
 

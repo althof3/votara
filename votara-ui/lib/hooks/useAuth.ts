@@ -1,9 +1,8 @@
 'use client';
 
 import { SiweMessage } from 'siwe';
-import { useAccount, useDisconnect, useConnect, useSignMessage } from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { useCallback, useEffect, useState } from 'react';
-import { injected } from 'wagmi/connectors';
 import axios from 'axios';
 import { authApi } from '@/lib/api/client';
 
@@ -12,7 +11,6 @@ const TOKEN_STORAGE_KEY = 'votara_auth_token';
 export function useAuth() {
   const { address, isConnected, chainId } = useAccount();
   const { disconnect } = useDisconnect();
-  const { connect } = useConnect();
   const { signMessageAsync } = useSignMessage();
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,14 +38,9 @@ export function useAuth() {
       setLoading(true);
       setError(null);
 
-      // Connect wallet if not connected
-      if (!isConnected) {
-        connect({ connector: injected() });
-        return;
-      }
-
-      if (!address) {
-        throw new Error('No wallet address');
+      // OnchainKit handles wallet connection, so we just need wallet to be connected
+      if (!isConnected || !address) {
+        throw new Error('Please connect your wallet first');
       }
 
       // 1. Get nonce from backend (with signed nonce for stateless auth)
@@ -98,7 +91,7 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, [address, isConnected, chainId, connect, signMessageAsync]);
+  }, [address, isConnected, chainId, signMessageAsync]);
 
   const logout = useCallback(async () => {
     try {
@@ -112,20 +105,6 @@ export function useAuth() {
       console.error('Logout error:', err);
     }
   }, [disconnect]);
-
-  // Auto-login when wallet connects
-  useEffect(() => {
-    if (isConnected && address && !authenticated && !loading) {
-      login();
-    }
-  }, [isConnected, address, authenticated, loading, login]);
-
-  // Reset state when wallet disconnects
-  useEffect(() => {
-    if (!isConnected) {
-      setAuthenticated(false);
-    }
-  }, [isConnected]);
 
   return {
     ready: true,
