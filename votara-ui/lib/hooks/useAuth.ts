@@ -62,14 +62,13 @@ export function useAuth() {
 
       // 3. Sign message with wallet
       const signature = await signMessageAsync({
-        account: address,
         message: preparedMessage,
       });
 
       // 4. Verify with backend and get JWT token (send signedNonce for stateless verification)
       const verifyRes = await authApi.verify({
         message: message.toMessage(),
-        signature: signature?.toString() || '',
+        signature: signature,
         signedNonce, // Required for stateless nonce verification
       });
 
