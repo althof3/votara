@@ -5,7 +5,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, createConfig } from "wagmi";
 import { base, baseSepolia } from "viem/chains";
-import { injected } from "wagmi/connectors";
+import { coinbaseWallet, injected } from "wagmi/connectors";
 import "@coinbase/onchainkit/styles.css";
 
 const queryClient = new QueryClient();
@@ -13,7 +13,13 @@ const queryClient = new QueryClient();
 // Wagmi config for SIWE
 export const wagmiConfig = createConfig({
   chains: [base, baseSepolia],
-  connectors: [injected()],
+  connectors: [
+    coinbaseWallet({
+      appName: "Votara",
+      preference: "all", // Support both EOA and Smart Wallet
+    }),
+    injected(),
+  ],
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),
