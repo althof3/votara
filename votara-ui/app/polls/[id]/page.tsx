@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { VoteForm } from "@/components/VoteForm";
 import { usePolls } from "@/lib/hooks/usePolls";
@@ -10,7 +10,6 @@ import styles from "./poll.module.css";
 
 export default function PollPage() {
   const params = useParams();
-  const router = useRouter();
   const pollId = params.id as string;
   const { getPollById, loading } = usePolls();
   const { walletAddress } = useAuth();
