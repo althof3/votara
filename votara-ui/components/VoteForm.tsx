@@ -23,46 +23,17 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
 
   // Generate proof function using real Semaphore protocol
   const generateProof = async (): Promise<SemaphoreProof | null> => {
-    if (selectedOption === null) {
-      throw new Error('No option selected');
-    }
-
-    // Check if poll has required data
-    if (!poll.groupId || poll.groupId === '0') {
-      throw new Error('This poll has not been activated yet. The poll creator needs to activate it first.');
-    }
-
-    if (!poll.groupMembers || poll.groupMembers.length === 0) {
-      throw new Error(
-        'Poll group information is not available. This could mean:\n' +
-        '1. The poll has not been fully activated yet\n' +
-        '2. No voters have been registered\n' +
-        '3. There was an error loading group data\n\n' +
-        'Please contact the poll creator or try again later.'
-      );
-    }
-
-    // Check if user is eligible to vote
-    const members = poll.groupMembers.map((m: string) => BigInt(m));
-    if (!isUserInGroup(members)) {
-      throw new Error(
-        'You are not eligible to vote in this poll.\n\n' +
-        'Your identity commitment is not in the voter group. ' +
-        'Please ensure you were added as an eligible voter when the poll was created.'
-      );
-    }
-
-    // Generate the proof
-    const message = optionToMessage(selectedOption);
-    const scope = pollIdToScope(poll.id);
-
-    const proof = await generateVoteProof(
-      members,
-      message,
-      scope
-    );
-
-    return proof;
+    // MOCK: Fast proof generation for dummy mode
+    console.log('MOCK: Generating dummy proof...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return {
+      merkleTreeDepth: BigInt(20),
+      merkleTreeRoot: BigInt(0),
+      nullifierHash: BigInt(Math.floor(Math.random() * 1000000)),
+      message: BigInt(0),
+      scope: BigInt(0),
+      points: [BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0)]
+    } as any;
   };
 
   const handleVoteWithProof = async () => {

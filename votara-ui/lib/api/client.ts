@@ -145,127 +145,147 @@ export interface CreateGroupResponse {
   eligibleVotersCount: number;
 }
 
+import { MOCK_POLLS, MOCK_RESULTS, MOCK_USER_ADDRESS } from './mockData';
+
 /**
- * Auth API endpoints
+ * Auth API endpoints - MOCKED
  */
 export const authApi = {
-  /**
-   * Get nonce for SIWE authentication
-   */
-  getNonce: () => 
-    apiClient.get<{ success: boolean; nonce: string; signedNonce: string }>('/auth/nonce'),
+  getNonce: async () => ({
+    data: { success: true, nonce: 'mock-nonce-' + Math.random(), signedNonce: 'mock-signed-nonce' }
+  }),
   
-  /**
-   * Verify SIWE signature and get JWT token
-   */
-  verify: (data: { message: string; signature: string; signedNonce: string }) =>
-    apiClient.post<{ success: boolean; address: string; token: string }>('/auth/verify', data),
+  verify: async (data: { message: string; signature: string; signedNonce: string }) => ({
+    data: { success: true, address: MOCK_USER_ADDRESS, token: 'mock-jwt-token' }
+  }),
   
-  /**
-   * Get current user info (verify token)
-   */
-  me: () =>
-    apiClient.get<{ success: boolean; address: string; chainId: number }>('/auth/me'),
+  me: async () => ({
+    data: { success: true, address: MOCK_USER_ADDRESS, chainId: 84532 }
+  }),
   
-  /**
-   * Logout (client-side only, JWT is stateless)
-   */
-  logout: () =>
-    apiClient.post<{ success: boolean; message: string }>('/auth/logout'),
+  logout: async () => ({
+    data: { success: true, message: 'Logged out successfully' }
+  }),
 };
 
 /**
- * Polls API - No try-catch, error handling at component level
+ * Polls API - MOCKED
  */
 export const pollsApi = {
-  /**
-   * Get all polls with pagination
-   */
   getAll: async (params?: {
     page?: number;
     limit?: number;
     status?: 'DRAFT' | 'ACTIVE' | 'ENDED';
     creator?: string;
   }): Promise<PaginatedPollsResponse> => {
-    const response = await apiClient.get<{
-      success: boolean;
-      data: Poll[];
-      pagination: PaginationMeta;
-    }>('/polls', { params });
+    // Artificial delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
+    let filteredPolls = [...MOCK_POLLS];
+    
+    if (params?.status) {
+      filteredPolls = filteredPolls.filter(p => p.status === params.status);
+    }
+    
+    if (params?.creator) {
+      filteredPolls = filteredPolls.filter(p => p.createdBy === params.creator);
+    }
+
+    const page = params?.page || 1;
+    const limit = params?.limit || 10;
+    
     return {
-      polls: response.data.data,
-      pagination: response.data.pagination,
+      polls: filteredPolls.slice((page - 1) * limit, page * limit),
+      pagination: {
+        page,
+        limit,
+        totalCount: filteredPolls.length,
+        totalPages: Math.ceil(filteredPolls.length / limit),
+        hasMore: page * limit < filteredPolls.length,
+      },
     };
   },
 
-  /**
-   * Get single poll by ID
-   */
   getById: async (pollId: string): Promise<Poll> => {
-    const response = await apiClient.get<{ success: boolean; data: Poll }>(`/polls/${pollId}`);
-    return response.data.data;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const poll = MOCK_POLLS.find(p => p.id === pollId);
+    if (!poll) throw new Error('Poll not found');
+    return poll;
   },
 
-  /**
-   * Create new poll
-   */
   create: async (data: CreatePollRequest): Promise<Poll> => {
-    const response = await apiClient.post<{ success: boolean; data: Poll }>('/polls', data);
-    return response.data.data;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const newPoll: Poll = {
+      ...data,
+      id: data.pollId || `0x${Math.random().toString(16).slice(2)}`,
+      groupId: 'mock-group-id',
+      status: 'DRAFT',
+      createdBy: MOCK_USER_ADDRESS,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      _count: { votes: 0 }
+    };
+    MOCK_POLLS.unshift(newPoll);
+    return newPoll;
   },
 
-  /**
-   * Update poll (only DRAFT polls)
-   */
   update: async (pollId: string, data: UpdatePollRequest): Promise<Poll> => {
-    const response = await apiClient.put<{ success: boolean; data: Poll }>(`/polls/${pollId}`, data);
-    return response.data.data;
+    const pollIndex = MOCK_POLLS.findIndex(p => p.id === pollId);
+    if (pollIndex === -1) throw new Error('Poll not found');
+    
+    MOCK_POLLS[pollIndex] = {
+      ...MOCK_POLLS[pollIndex],
+      ...data,
+      updatedAt: new Date().toISOString(),
+      status: data.active ? 'ACTIVE' : MOCK_POLLS[pollIndex].status
+    };
+    
+    return MOCK_POLLS[pollIndex];
   },
 
-  /**
-   * Delete poll
-   */
   delete: async (pollId: string): Promise<void> => {
-    await apiClient.delete(`/polls/${pollId}`);
+    const pollIndex = MOCK_POLLS.findIndex(p => p.id === pollId);
+    if (pollIndex !== -1) {
+      MOCK_POLLS.splice(pollIndex, 1);
+    }
   },
 
-  /**
-   * Create Semaphore group for poll
-   */
   createGroup: async (pollId: string, data: CreateGroupRequest): Promise<CreateGroupResponse> => {
-    const response = await apiClient.post<{ success: boolean; data: CreateGroupResponse }>(
-      `/polls/${pollId}/create-group`,
-      data
-    );
-    return response.data.data;
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return {
+      pollId,
+      groupId: Math.floor(Math.random() * 1000).toString(),
+      semaphoreGroupTxHash: '0xmocktxhash' + Math.random().toString(16).slice(2),
+      eligibleVotersCount: data.eligibleAddresses.length
+    };
   },
 
-  /**
-   * Register to vote in a poll (add identity commitment to group)
-   */
   register: async (pollId: string, identityCommitment: string): Promise<void> => {
-    await apiClient.post(`/polls/${pollId}/register`, { identityCommitment });
+    await new Promise(resolve => setTimeout(resolve, 500));
   },
 
-  /**
-   * Get poll results
-   */
   getResults: async (pollId: string): Promise<PollResultsResponse> => {
-    const response = await apiClient.get<{ success: boolean; data: PollResultsResponse }>(
-      `/polls/${pollId}/results`
-    );
-    return response.data.data;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const results = MOCK_RESULTS[pollId];
+    if (results) return results;
+    
+    // Default mock results for newly created polls
+    const poll = MOCK_POLLS.find(p => p.id === pollId);
+    if (!poll) throw new Error('Poll not found');
+    
+    return {
+      poll,
+      totalVotes: 0,
+      results: poll.options.map(opt => ({
+        optionId: opt.id,
+        optionLabel: opt.label,
+        votes: 0
+      }))
+    };
   },
 
-  /**
-   * Get group members for a poll (Semaphore identity commitments)
-   */
   getGroupMembers: async (pollId: string): Promise<string[]> => {
-    const response = await apiClient.get<{ success: boolean; data: { members: string[] } }>(
-      `/polls/${pollId}/group-members`
-    );
-    return response.data.data.members || [];
+    return [];
   },
 };
 

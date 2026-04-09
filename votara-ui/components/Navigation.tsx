@@ -3,40 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAccount } from 'wagmi';
-import { Wallet } from '@coinbase/onchainkit/wallet';
 import { useAuth } from '@/lib/hooks/useAuth';
 import styles from './Navigation.module.css';
 
 export function Navigation() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { address, isConnected } = useAccount();
-  const { authenticated, login, loading, logout } = useAuth();
+  const { authenticated, login, loading, logout, isConnected, walletAddress } = useAuth();
+  
+  console.log('Navigation Render: isSidebarOpen =', isSidebarOpen);
 
-  // Auto-login when wallet connects
-  useEffect(() => {
-    const triggerLogin = async () => {
-      console.log('Attempting auto-login:', { isConnected, address, authenticated, loading });
-      if (isConnected && address && !authenticated && !loading) {
-        try {
-          await login();
-        } catch (err) {
-          console.error('Auto-login failed:', err);
-        }
-      }
-    };
-
-    triggerLogin();
-  }, [isConnected, address, authenticated, loading, login]);
-
-  // Reset auth state when wallet disconnects
-  useEffect(() => {
-    if (!isConnected && authenticated) {
-      console.log('Wallet disconnected, logging out...');
-      logout();
-    }
-  }, [isConnected, authenticated, logout]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -46,10 +22,12 @@ export function Navigation() {
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    console.log('Sidebar toggled. Current state:', isSidebarOpen);
+    setIsSidebarOpen(prev => !prev);
   };
 
   const closeSidebar = () => {
+    console.log('Sidebar closed');
     setIsSidebarOpen(false);
   };
 
@@ -91,7 +69,12 @@ export function Navigation() {
           </div>
 
           <div className={styles.walletWrapper}>
-            <Wallet />
+            <div className={styles.mockWallet}>
+              <div className={styles.avatar}></div>
+              <span className={styles.address}>
+                {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connecting...'}
+              </span>
+            </div>
           </div>
         </div>
       </nav>

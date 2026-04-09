@@ -1,104 +1,54 @@
 /**
- * Votara Smart Contract Integration
- *
- * This module provides functions to interact with the VotaraVoting smart contract.
- * It uses viem for blockchain interactions and is compatible with Privy wallet provider.
+ * Votara Smart Contract Integration - MOCKED
  */
 
-import { createPublicClient, createWalletClient, custom, http, type Address, type Hash } from 'viem';
-import { baseSepolia } from 'viem/chains';
-import { VOTARA_ABI, type SemaphoreProof } from './votaraABI';
+import { type Address, type Hash } from 'viem';
+import { type SemaphoreProof } from './votaraABI';
 
 // Contract address from environment
-export const VOTARA_CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_VOTARA_CONTRACT_ADDRESS || '') as Address;
-
-// Chain configuration
-const chain = baseSepolia;
+export const VOTARA_CONTRACT_ADDRESS = '0x1234567890123456789012345678901234567890' as Address;
 
 /**
- * Get public client for reading contract
- * This is used for read-only operations (no wallet needed)
+ * MOCK: Get public client
  */
 export function getPublicClient() {
-  return createPublicClient({
-    chain,
-    transport: http(),
-  });
+  return {};
 }
 
 /**
- * Get wallet client for writing to contract
- * This uses the browser's Ethereum provider (injected by Privy, MetaMask, etc.)
- *
- * @throws Error if no Ethereum wallet is found
+ * MOCK: Get wallet client
  */
 export function getWalletClient() {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error('No Ethereum wallet found. Please connect your wallet first.');
-  }
-
-  return createWalletClient({
-    chain,
-    transport: custom(window.ethereum),
-  });
+  return {};
 }
 
 /**
- * Create a poll on-chain (registers creator)
- * This should be called BEFORE saving metadata to backend
- * @param pollId - Poll ID (bytes32)
- * @param account - User's wallet address
- * @returns Transaction hash
+ * MOCK: Create a poll on-chain
  */
 export async function createPoll(
   pollId: `0x${string}`,
   account: Address
 ): Promise<Hash> {
-  const walletClient = getWalletClient();
-
-  const hash = await walletClient.writeContract({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    functionName: 'createPoll',
-    args: [pollId],
-    account,
-  });
-
-  return hash;
+  console.log('MOCK: createPoll', { pollId, account });
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return `0xmocktxhash${Math.random().toString(16).slice(2)}` as Hash;
 }
 
 /**
- * Activate a poll on-chain
- * @param pollId - Poll ID (bytes32)
- * @param groupId - Semaphore group ID
- * @param account - User's wallet address
- * @returns Transaction hash
+ * MOCK: Activate a poll on-chain
  */
 export async function activatePoll(
   pollId: `0x${string}`,
   groupId: bigint,
   account: Address
 ): Promise<Hash> {
-  const walletClient = getWalletClient();
-
-  const hash = await walletClient.writeContract({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    functionName: 'activatePoll',
-    args: [pollId, groupId],
-    account,
-  });
-
-  return hash;
+  console.log('MOCK: activatePoll', { pollId, groupId, account });
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return `0xmocktxhash${Math.random().toString(16).slice(2)}` as Hash;
 }
 
 /**
- * Cast a vote on-chain
- * @param pollId - Poll ID (bytes32)
- * @param optionIndex - Option index (0-255)
- * @param proof - Semaphore ZK proof
- * @param account - User's wallet address
- * @returns Transaction hash
+ * MOCK: Cast a vote on-chain
  */
 export async function castVote(
   pollId: `0x${string}`,
@@ -106,113 +56,53 @@ export async function castVote(
   proof: SemaphoreProof,
   account: Address
 ): Promise<Hash> {
-  const walletClient = getWalletClient();
-
-  const hash = await walletClient.writeContract({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    functionName: 'castVote',
-    args: [pollId, optionIndex, proof],
-    account,
-  });
-
-  return hash;
+  console.log('MOCK: castVote', { pollId, optionIndex, account });
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  return `0xmocktxhash${Math.random().toString(16).slice(2)}` as Hash;
 }
 
 /**
- * Get vote count for a specific option
- * @param pollId - Poll ID (bytes32)
- * @param optionIndex - Option index (0-255)
- * @returns Vote count
+ * MOCK: Get vote count for a specific option
  */
 export async function getPollVotes(
   pollId: `0x${string}`,
   optionIndex: number
 ): Promise<bigint> {
-  const publicClient = getPublicClient();
-
-  const votes = await publicClient.readContract({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    functionName: 'getPollVotes',
-    args: [pollId, optionIndex],
-  });
-
-  return votes;
+  return BigInt(Math.floor(Math.random() * 100));
 }
 
 /**
- * Get poll info from contract
- * @param pollId - Poll ID (bytes32)
- * @returns Poll info (pollId, groupId)
+ * MOCK: Get poll info from contract
  */
 export async function getPollInfo(pollId: `0x${string}`) {
-  const publicClient = getPublicClient();
-
-  const pollInfo = await publicClient.readContract({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    functionName: 'polls',
-    args: [pollId],
-  });
-
   return {
-    pollId: pollInfo[0],
-    groupId: pollInfo[1],
+    pollId: pollId,
+    groupId: BigInt(1),
   };
 }
 
 /**
- * Wait for transaction confirmation
- * @param hash - Transaction hash
- * @returns Transaction receipt
+ * MOCK: Wait for transaction confirmation
  */
 export async function waitForTransaction(hash: Hash) {
-  const publicClient = getPublicClient();
-  return await publicClient.waitForTransactionReceipt({ hash });
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return { status: 'success', transactionHash: hash };
 }
 
 /**
- * Watch for PollActivated events
+ * MOCK: Watch for PollActivated events
  */
 export function watchPollActivated(
   callback: (pollId: `0x${string}`, groupId: bigint) => void
 ) {
-  const publicClient = getPublicClient();
-
-  return publicClient.watchContractEvent({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    eventName: 'PollActivated',
-    onLogs: (logs) => {
-      logs.forEach((log) => {
-        if (log.args.pollId && log.args.groupId !== undefined) {
-          callback(log.args.pollId, log.args.groupId);
-        }
-      });
-    },
-  });
+  return () => {}; // No-op cleanup
 }
 
 /**
- * Watch for VoteCast events
+ * MOCK: Watch for VoteCast events
  */
 export function watchVoteCast(
   callback: (pollId: `0x${string}`, optionIndex: number, nullifierHash: bigint) => void
 ) {
-  const publicClient = getPublicClient();
-
-  return publicClient.watchContractEvent({
-    address: VOTARA_CONTRACT_ADDRESS,
-    abi: VOTARA_ABI,
-    eventName: 'VoteCast',
-    onLogs: (logs) => {
-      logs.forEach((log) => {
-        if (log.args.pollId && log.args.optionIndex !== undefined && log.args.nullifierHash !== undefined) {
-          callback(log.args.pollId, log.args.optionIndex, log.args.nullifierHash);
-        }
-      });
-    },
-  });
+  return () => {}; // No-op cleanup
 }
-
