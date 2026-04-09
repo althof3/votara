@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useInfinitePolls } from '@/lib/hooks/useInfinitePolls';
 import type { Poll } from '@/lib/api/client';
+import { PollsListSkeleton } from './skeletons/PollSkeleton';
 import styles from './PollsList.module.css';
 
 interface PollsListProps {
@@ -23,11 +25,7 @@ export function PollsList({ status, limit = 10 }: PollsListProps) {
   } = useInfinitePolls({ status, limit });
 
   if (initialLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner}></div>
-      </div>
-    );
+    return <PollsListSkeleton count={limit} />;
   }
 
   if (error) {
@@ -114,7 +112,7 @@ function PollCard({ poll }: { poll: Poll }) {
   };
 
   return (
-    <div className={styles.card}>
+    <Link href={`/polls/${poll.id}`} className={styles.card}>
       {/* Status Badge */}
       <div className={styles.cardHeader}>
         <span className={`${styles.badge} ${getBadgeClass()}`}>
@@ -137,7 +135,7 @@ function PollCard({ poll }: { poll: Poll }) {
       <div className={styles.cardFooter}>
         {poll.options.length} options
       </div>
-    </div>
+    </Link>
   );
 }
 

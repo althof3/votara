@@ -16,18 +16,27 @@ export function Navigation() {
 
   // Auto-login when wallet connects
   useEffect(() => {
-    console.log(isConnected, address, authenticated, loading);
-    if (isConnected && address && !authenticated && !loading) {
-      login();
-    }
+    const triggerLogin = async () => {
+      console.log('Attempting auto-login:', { isConnected, address, authenticated, loading });
+      if (isConnected && address && !authenticated && !loading) {
+        try {
+          await login();
+        } catch (err) {
+          console.error('Auto-login failed:', err);
+        }
+      }
+    };
+
+    triggerLogin();
   }, [isConnected, address, authenticated, loading, login]);
 
   // Reset auth state when wallet disconnects
   useEffect(() => {
-    if (!isConnected) {
+    if (!isConnected && authenticated) {
+      console.log('Wallet disconnected, logging out...');
       logout();
     }
-  }, [isConnected, logout]);
+  }, [isConnected, authenticated, logout]);
 
   const isActive = (path: string) => {
     if (path === '/') {

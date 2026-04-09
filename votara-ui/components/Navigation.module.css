@@ -39,6 +39,12 @@
   background-color: rgba(251, 191, 36, 0.2);
 }
 
+@media (max-width: 767px) {
+  .menuButton {
+    display: none;
+  }
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -220,6 +226,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -245,4 +252,3 @@
     display: inline;
   }
 }
-

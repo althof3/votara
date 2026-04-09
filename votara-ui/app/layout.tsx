@@ -4,6 +4,7 @@ import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import { Navigation } from "@/components/Navigation";
+import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +48,8 @@ export default function RootLayout({
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
           <SafeArea>
             <Navigation />
-            {children}
+            <main>{children}</main>
+            <BottomNav />
           </SafeArea>
         </body>
       </html>

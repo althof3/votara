@@ -2,7 +2,7 @@
 
 import { SiweMessage } from 'siwe';
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { authApi } from '@/lib/api/client';
 
@@ -15,6 +15,7 @@ export function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loginInProgress = useRef(false);
 
   // Check if token exists and verify on mount
   useEffect(() => {
@@ -34,7 +35,10 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async () => {
+    if (loginInProgress.current) return;
+    
     try {
+      loginInProgress.current = true;
       setLoading(true);
       setError(null);
 
@@ -64,6 +68,7 @@ export function useAuth() {
       const signature = await signMessageAsync({
         message: preparedMessage,
       });
+      
 
       // 4. Verify with backend and get JWT token (send signedNonce for stateless verification)
       const verifyRes = await authApi.verify({
@@ -90,6 +95,7 @@ export function useAuth() {
       }
     } finally {
       setLoading(false);
+      loginInProgress.current = false;
     }
   }, [address, isConnected, chainId, signMessageAsync]);
 

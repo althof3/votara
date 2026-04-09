@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { SiweMessage, generateNonce } from 'siwe';
 import jwt from 'jsonwebtoken';
+import { verifySiweMessage } from 'viem/siwe';
+import { CHAIN, publicClient } from '../services/blockchain';
 import { logger } from '../utils/logger';
 import prisma from '../db';
 
@@ -59,7 +61,7 @@ router.get('/nonce', (req: Request, res: Response) => {
     const signedNonce = jwt.sign(
       { nonce },
       JWT_SECRET,
-      { expiresIn: '5m' }
+      { expiresIn: '50m' }
     );
 
     res.json({
@@ -67,7 +69,7 @@ router.get('/nonce', (req: Request, res: Response) => {
       nonce,
       signedNonce, // Frontend must send this back for verification
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Error generating nonce:', error);
     res.status(500).json({
       success: false,
@@ -97,7 +99,7 @@ router.post('/verify', async (req: Request, res: Response) => {
     try {
       const decoded = jwt.verify(signedNonce, JWT_SECRET) as { nonce: string };
       nonce = decoded.nonce;
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(401).json({
         success: false,
         error: 'Invalid or expired nonce',
@@ -106,17 +108,60 @@ router.post('/verify', async (req: Request, res: Response) => {
 
     const siweMessage = new SiweMessage(message);
 
-    // Verify the SIWE message with the nonce
-    const fields = await siweMessage.verify({
-      signature,
-      nonce,
+    // Debug logging
+    logger.info('Verifying SIWE signature:', {
+      address: siweMessage.address,
+      nonce: siweMessage.nonce,
+      expectedNonce: nonce,
+      chainId: siweMessage.chainId,
+      signatureLength: signature.length,
     });
 
-    if (!fields.success) {
+    // Verify nonce matches
+    if (siweMessage.nonce !== nonce) {
+      logger.error('Nonce mismatch:', {
+        messageNonce: siweMessage.nonce,
+        expectedNonce: nonce,
+      });
       return res.status(401).json({
         success: false,
-        error: 'Invalid signature',
+        error: 'Nonce mismatch',
       });
+    }
+
+    // Verify the SIWE message signature
+    // For smart wallets (like Coinbase Smart Wallet), we need to use verifyMessage
+    // which supports both EOA (ECDSA) and Smart Wallet (ERC-1271) signatures
+    const messageToVerify = siweMessage.prepareMessage();
+
+    logger.info('Message to verify:', messageToVerify);
+    logger.info('Signature:', signature);
+    logger.info('Expected address:', siweMessage.address);
+
+    let isValid = false;
+
+    isValid = await verifySiweMessage(publicClient, {
+      message: messageToVerify,
+      signature: signature as `0x${string}`,
+    });
+
+    logger.info('verifySiweMessage result:' + isValid.toString());
+
+    if (!isValid) {
+      isValid = await publicClient.verifyMessage({
+        address: siweMessage.address as `0x${string}`,
+        message: messageToVerify,
+        signature: signature as `0x${string}`,
+      });
+      if (isValid) {
+        logger.info('Signature verification successful for address:', siweMessage.address);
+      } else {
+        logger.error('Signature verification failed for address:', siweMessage.address);
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid signature',
+        });
+      }
     }
 
     // Create or update user in database (only on login)
@@ -130,7 +175,7 @@ router.post('/verify', async (req: Request, res: Response) => {
       address: siweMessage.address,
       token, // Return JWT token to frontend
     });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Error verifying SIWE message:', error);
     res.status(401).json({
       success: false,
@@ -175,7 +220,7 @@ router.get('/me', (req: Request, res: Response) => {
       address: decoded.address,
       chainId: decoded.chainId,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     res.status(401).json({
       success: false,
       error: 'Invalid or expired token',
