@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -9,7 +10,7 @@ import styles from './Navigation.module.css';
 export function Navigation() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { authenticated, login, loading, logout, isConnected, walletAddress } = useAuth();
+  const { walletAddress } = useAuth();
   
   console.log('Navigation Render: isSidebarOpen =', isSidebarOpen);
 
@@ -57,11 +58,11 @@ export function Navigation() {
 
             <div>
               <Link href="/" className={styles.logo}>
-                <img
+                <Image
                   src="/votara.png"
                   alt="Votara"
-                  // width={55}
-                  // height={55}
+                  width={150}
+                  height={40}
                   className={styles.logoImage}
                 />
               </Link>

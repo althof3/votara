@@ -155,7 +155,7 @@ export const authApi = {
     data: { success: true, nonce: 'mock-nonce-' + Math.random(), signedNonce: 'mock-signed-nonce' }
   }),
   
-  verify: async (data: { message: string; signature: string; signedNonce: string }) => ({
+  verify: async (_data: { message: string; signature: string; signedNonce: string }) => ({
     data: { success: true, address: MOCK_USER_ADDRESS, token: 'mock-jwt-token' }
   }),
   
@@ -260,7 +260,7 @@ export const pollsApi = {
     };
   },
 
-  register: async (pollId: string, identityCommitment: string): Promise<void> => {
+  register: async (_pollId: string, _identityCommitment: string): Promise<void> => {
     await new Promise(resolve => setTimeout(resolve, 500));
   },
 
@@ -284,7 +284,7 @@ export const pollsApi = {
     };
   },
 
-  getGroupMembers: async (pollId: string): Promise<string[]> => {
+  getGroupMembers: async (_pollId: string): Promise<string[]> => {
     return [];
   },
 };

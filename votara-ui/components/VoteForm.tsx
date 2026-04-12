@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useVoting } from '@/lib/hooks/useVoting';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { generateVoteProof, pollIdToScope, optionToMessage, isUserInGroup } from '@/lib/utils/semaphore';
+// import { generateVoteProof, pollIdToScope, optionToMessage, isUserInGroup } from '@/lib/utils/semaphore';
 import type { Poll } from '@/lib/api/client';
 import type { SemaphoreProof } from '@/lib/contracts/votaraABI';
 import type { Address } from 'viem';
@@ -29,11 +29,11 @@ export function VoteForm({ poll, onSuccess }: VoteFormProps) {
     return {
       merkleTreeDepth: BigInt(20),
       merkleTreeRoot: BigInt(0),
-      nullifierHash: BigInt(Math.floor(Math.random() * 1000000)),
+      nullifier: BigInt(Math.floor(Math.random() * 1000000)),
       message: BigInt(0),
       scope: BigInt(0),
       points: [BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0)]
-    } as any;
+    } as SemaphoreProof;
   };
 
   const handleVoteWithProof = async () => {

@@ -65,8 +65,8 @@ export async function castVote(
  * MOCK: Get vote count for a specific option
  */
 export async function getPollVotes(
-  pollId: `0x${string}`,
-  optionIndex: number
+  _pollId: `0x${string}`,
+  _optionIndex: number
 ): Promise<bigint> {
   return BigInt(Math.floor(Math.random() * 100));
 }
@@ -93,7 +93,7 @@ export async function waitForTransaction(hash: Hash) {
  * MOCK: Watch for PollActivated events
  */
 export function watchPollActivated(
-  callback: (pollId: `0x${string}`, groupId: bigint) => void
+  _callback: (pollId: `0x${string}`, groupId: bigint) => void
 ) {
   return () => {}; // No-op cleanup
 }
@@ -102,7 +102,7 @@ export function watchPollActivated(
  * MOCK: Watch for VoteCast events
  */
 export function watchVoteCast(
-  callback: (pollId: `0x${string}`, optionIndex: number, nullifierHash: bigint) => void
+  _callback: (pollId: `0x${string}`, optionIndex: number, nullifierHash: bigint) => void
 ) {
   return () => {}; // No-op cleanup
 }

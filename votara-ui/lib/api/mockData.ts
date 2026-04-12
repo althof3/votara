@@ -1,4 +1,4 @@
-import { Poll, PollResultsResponse, PaginatedPollsResponse } from './client';
+import { Poll, PollResultsResponse } from './client';
 
 export const MOCK_USER_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
 
